@@ -1,0 +1,151 @@
+generator client {
+  provider = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+enum Role {
+  PATIENT
+  THERAPIST
+  ADMIN
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      Role     @default(PATIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  chats            ChatHistory[]
+  moods            MoodLog[]
+  workbooks        WorkbookEntry[]
+  sessionSummaries SessionSummary[]
+  responses        UserResponse[]
+  habits           Habit[]
+  achievements     UserAchievement[]
+}
+
+model ChatHistory {
+  id        String   @id @default(uuid())
+  userId    String
+  sender    String   // 'user' or 'ai'
+  message   String
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model MoodLog {
+  id        String   @id @default(uuid())
+  userId    String
+  mood      Int      // e.g., 1 (Very Sad) to 5 (Very Happy)
+  notes     String?
+  createdAt DateTime @default(now())
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model WorkbookEntry {
+  id        String   @id @default(uuid())
+  userId    String
+  title     String
+  content   String   // JSON string or Text content
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 1. AI Companion & Crisis Management
+model SessionSummary {
+  id        String   @id @default(uuid())
+  userId    String
+  summary   String   // AI generated summary of recent chats
+  sentiment Float    // Overall sentiment score
+  riskLevel String   @default("LOW") // LOW, MEDIUM, HIGH (Crisis)
+  createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// 2. Interactive Workbooks (CBT/DBT)
+model Module {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  type        String   // CBT, DBT, ATTACHMENT
+  exercises   Exercise[]
+}
+
+model Exercise {
+  id          String   @id @default(uuid())
+  moduleId    String
+  title       String
+  prompt      String
+  type        String   // TEXT, MULTIPLE_CHOICE, SCALE
+  module      Module   @relation(fields: [moduleId], references: [id], onDelete: Cascade)
+  responses   UserResponse[]
+}
+
+model UserResponse {
+  id          String   @id @default(uuid())
+  userId      String
+  exerciseId  String
+  answer      String   // JSON string for complex answers
+  createdAt   DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  exercise    Exercise @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+}
+
+// 3. Productivity & Habits
+model Habit {
+  id          String   @id @default(uuid())
+  userId      String
+  title       String
+  frequency   String   // DAILY, WEEKLY
+  logs        HabitLog[]
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model HabitLog {
+  id          String   @id @default(uuid())
+  habitId     String
+  completedAt DateTime @default(now())
+  habit       Habit    @relation(fields: [habitId], references: [id], onDelete: Cascade)
+}
+
+// 4. Gamification
+model Achievement {
+  id          String   @id @default(uuid())
+  title       String
+  description String
+  icon        String
+  users       UserAchievement[]
+}
+
+model UserAchievement {
+  id            String      @id @default(uuid())
+  userId        String
+  achievementId String
+  earnedAt      DateTime    @default(now())
+  user          User        @relation(fields: [userId], references: [id], onDelete: Cascade)
+  achievement   Achievement @relation(fields: [achievementId], references: [id], onDelete: Cascade)
+}
+
+// 5. AI RAG Documents
+model DocumentChunk {
+  id        String   @id @default(uuid())
+  bookTitle String
+  content   String
+  embedding Unsupported("vector(768)")?
+  createdAt DateTime @default(now())
+}
+

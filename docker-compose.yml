@@ -1,0 +1,73 @@
+version: '3.8'
+
+services:
+  # PostgreSQL for Relational Data
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: sagipisip_postgres
+    environment:
+      POSTGRES_USER: sagipisip
+      POSTGRES_PASSWORD: password123
+      POSTGRES_DB: sagipisip_db
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  # Redis for Caching and WebSockets
+  redis:
+    image: redis:7-alpine
+    container_name: sagipisip_redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    restart: unless-stopped
+
+  # Ollama for Free Local AI
+  ollama:
+    image: ollama/ollama:latest
+    container_name: sagipisip_ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    restart: unless-stopped
+    # Note: You will need to pull a model manually via:
+  # NestJS Backend
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sagipisip_backend
+    ports:
+      - "3001:3000"
+    environment:
+      DATABASE_URL: "postgresql://sagipisip:password123@postgres:5432/sagipisip_db?schema=public"
+      JWT_SECRET: "your_super_secret_jwt_key_for_sagipisip"
+      OLLAMA_HOST: "http://ollama:11434"
+      CORS_ORIGIN: "http://localhost:3000"
+    depends_on:
+      - postgres
+      - redis
+    restart: unless-stopped
+
+  # Next.js Frontend
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sagipisip_frontend
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_URL: "http://localhost:3001"
+    depends_on:
+      - backend
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+  ollama_data:
