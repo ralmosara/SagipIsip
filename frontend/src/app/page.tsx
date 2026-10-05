@@ -6,11 +6,20 @@ import {
   HeartPulse, 
   MessageSquare, 
   BookOpen, 
-  Activity,
   LogOut,
   Sparkles,
-  Flame,
-  Award
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  AlertCircle,
+  ArrowRight,
+  Menu,
+  Activity,
+  Microscope,
+  Stethoscope,
+  Mic,
+  Wind,
+  LineChart as LineChartIcon
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -18,217 +27,411 @@ import {
   XAxis, 
   YAxis, 
   Tooltip, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  ReferenceLine,
+  CartesianGrid
 } from 'recharts';
 import Link from 'next/link';
 
-const mockMoodData = [
-  { day: 'Mon', mood: 3 },
-  { day: 'Tue', mood: 4 },
-  { day: 'Wed', mood: 2 },
-  { day: 'Thu', mood: 4 },
-  { day: 'Fri', mood: 5 },
-  { day: 'Sat', mood: 4 },
-  { day: 'Sun', mood: 5 },
-];
+interface MoodTrend {
+  sevenDayAverage: number | null;
+  thirtyDayAverage: number | null;
+  weeklyData: { date: string; average: number; count: number }[];
+  trend: 'improving' | 'declining' | 'stable' | 'insufficient_data';
+  anomalyDetected: boolean;
+  anomalyDescription: string | null;
+  recentLogs: { mood: number; notes: string | null; createdAt: string }[];
+}
+
+interface Achievement {
+  id: string;
+  earnedAt: string;
+  achievement: { title: string; icon: string; description: string };
+}
+
+interface WorkbookEntry {
+  id: string;
+  title: string;
+  createdAt: string;
+}
+
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001';
+
+const moodLabels: Record<number, string> = {
+  1: 'Critical/Very Low', 2: 'Low/Distressed', 3: 'Stable/Neutral', 4: 'Good/Elevated', 5: 'Optimal/Very High',
+};
+
+function generateAiInsight(trend: MoodTrend): string {
+  if (!trend.sevenDayAverage) {
+    return 'Initiate patient telemetry by logging an initial mood assessment. Continuous data collection is required for accurate clinical insights.';
+  }
+
+  if (trend.anomalyDetected && trend.anomalyDescription) {
+    return 'CLINICAL ALERT: ' + trend.anomalyDescription + ' Please utilize support channels immediately.';
+  }
+
+  const avg = trend.sevenDayAverage;
+  const trendDir = trend.trend;
+
+  if (trendDir === 'improving') {
+    return `Therapeutic efficacy indicated. 7-day trailing average (${avg}/5) shows positive trajectory. Continue adherence to current behavioral protocols.`;
+  }
+  if (trendDir === 'declining') {
+    if (avg <= 2) {
+      return `Elevated distress indicated (Avg: ${avg}/5). Recommend immediate review of Distress Tolerance modules. Contact a clinical professional if symptoms persist or escalate.`;
+    }
+    return `Slight downward trajectory noted (Avg: ${avg}/5). Recommend engaging with Cognitive Restructuring interventions to mitigate potential further decline.`;
+  }
+  if (trendDir === 'stable' && avg >= 4) {
+    return `Optimal stability maintained (Avg: ${avg}/5). Current behavioral regimens appear highly effective. Recommend maintenance protocols.`;
+  }
+  if (trendDir === 'stable') {
+    return `Baseline stability observed (Avg: ${avg}/5). Recommend implementation of Mindfulness modules to increase psychological resilience and buffer against future stressors.`;
+  }
+  return `Consistent longitudinal data is required for precise analytical insights. Please maintain daily logging cadence.`;
+}
 
 export default function PatientDashboard() {
   const router = useRouter();
   const [userName, setUserName] = useState('Patient');
   const [isClient, setIsClient] = useState(false);
+  const [moodTrend, setMoodTrend] = useState<MoodTrend | null>(null);
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [recentWorkbooks, setRecentWorkbooks] = useState<WorkbookEntry[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     setIsClient(true);
     const storedName = localStorage.getItem('userName');
     if (storedName) setUserName(storedName);
-  }, []);
 
-  if (!isClient) return null; 
+    const token = localStorage.getItem('token');
+    if (!token) {
+      router.push('/auth');
+      return;
+    }
+
+    const headers = { Authorization: `Bearer ${token}` };
+
+    Promise.all([
+      fetch(`${API_URL}/moods/trend`, { headers }).then((r) => r.json()).catch(() => null),
+      fetch(`${API_URL}/workbooks`, { headers }).then((r) => r.json()).catch(() => []),
+    ]).then(([trendData, workbookData]) => {
+      if (trendData && !trendData.statusCode) setMoodTrend(trendData);
+      if (Array.isArray(workbookData)) setRecentWorkbooks(workbookData.slice(0, 3));
+      setIsLoading(false);
+    });
+  }, [router]);
+
+  if (!isClient) return null;
+
+  const chartData = moodTrend?.weeklyData?.filter((d) => d.count > 0).map((d) => ({
+    day: d.date.split(',')[0],
+    mood: d.average,
+  })) ?? [];
+
+  const aiInsight = moodTrend ? generateAiInsight(moodTrend) : null;
+
+  const trendIcon = moodTrend?.trend === 'improving'
+    ? <TrendingUp size={16} className="text-[#009384]" />
+    : moodTrend?.trend === 'declining'
+    ? <TrendingDown size={16} className="text-[#D32F2F]" />
+    : <Minus size={16} className="text-[#64748B]" />;
+
+  const trendColor = moodTrend?.trend === 'improving'
+    ? 'text-[#009384] bg-[#E0F2F1] border-[#B2DFDB]'
+    : moodTrend?.trend === 'declining'
+    ? 'text-[#D32F2F] bg-[#FFEBEE] border-[#FFCDD2]'
+    : 'text-[#475569] bg-[#F1F5F9] border-[#E2E8F0]';
+
+  const trendLabel = moodTrend?.trend === 'improving' ? 'Positive Trajectory'
+    : moodTrend?.trend === 'declining' ? 'Intervention Recommended'
+    : moodTrend?.trend === 'stable' ? 'Stable Baseline'
+    : 'Data Collection Phase';
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-[#E0F2F1] via-[#E3F2FD] to-[#FFF3E0] font-inter text-slate-800 selection:bg-blue-300/30 overflow-hidden relative">
-      {/* Background Orbs for Glassmorphism */}
-      <div className="absolute top-[-10%] left-[-5%] w-96 h-96 bg-[#80DEEA] rounded-full mix-blend-multiply filter blur-3xl opacity-50 animate-blob"></div>
-      <div className="absolute top-[20%] right-[-10%] w-80 h-80 bg-[#FFCC80] rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-2000"></div>
-      <div className="absolute bottom-[-20%] left-[20%] w-[30rem] h-[30rem] bg-[#A5D6A7] rounded-full mix-blend-multiply filter blur-3xl opacity-40 animate-blob animation-delay-4000"></div>
-
-      {/* Glassmorphic Navigation */}
-      <header className="sticky top-0 z-50 backdrop-blur-md bg-white/40 border-b border-white/30">
-        <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-tr from-[#0288D1] to-[#26C6DA] p-2 rounded-xl text-white shadow-lg shadow-blue-500/20">
-              <Activity size={20} />
-            </div>
-            <span className="text-lg font-outfit font-bold tracking-wide text-slate-800">
-              SagipIsip Sanctuary
-            </span>
-          </div>
-          <div className="flex items-center gap-6">
-            <span className="text-sm font-medium text-slate-600 hidden sm:block">Welcome back, {userName}</span>
-            <button 
-              onClick={() => {
-                localStorage.removeItem("token");
-                router.push("/auth");
-              }}
-              className="flex items-center gap-2 text-sm font-semibold text-slate-600 hover:text-rose-500 transition-colors bg-white/50 px-4 py-2 rounded-full border border-white/50 hover:bg-white/80 shadow-sm"
-            >
-              <LogOut size={16} />
-              Sign out
+    <div className="min-h-screen bg-[#F4F6F8] font-sans text-[#041E42] selection:bg-[#00CCFF] selection:text-[#041E42]">
+      {/* Clinical Top Navigation */}
+      <header className="sticky top-0 z-50 bg-white border-b border-[#E2E8F0] shadow-[0_2px_10px_rgba(4,30,66,0.03)]">
+        <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <button className="p-2 -ml-2 rounded-md text-[#64748B] hover:bg-[#F1F5F9] transition-colors md:hidden">
+              <Menu size={24} />
             </button>
+            <div className="flex items-center gap-3">
+              <div className="bg-pfizer-gradient p-2 rounded text-white shadow-md">
+                <Stethoscope size={24} strokeWidth={2} />
+              </div>
+              <div className="hidden sm:block">
+                <span className="text-[1.25rem] font-bold tracking-tight text-[#041E42] leading-none block">
+                  SagipIsip
+                </span>
+                <span className="text-[0.65rem] uppercase tracking-widest text-[#001CD6] font-bold block mt-0.5">
+                  Patient Portal
+                </span>
+              </div>
+            </div>
+          </div>
+          <div className="flex items-center gap-4 sm:gap-6">
+            <div className="hidden sm:flex flex-col items-end mr-2">
+              <span className="text-[13px] font-bold text-[#041E42] leading-none">Patient ID: {userName}</span>
+              <span className="text-[11px] text-[#64748B] mt-1">Authenticated Session</span>
+            </div>
+            <div className="h-10 w-10 rounded border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#001CD6] text-sm font-bold shadow-sm">
+              {userName.charAt(0).toUpperCase()}
+            </div>
           </div>
         </div>
       </header>
 
-      <main className="relative max-w-6xl mx-auto px-6 mt-10 pb-16 z-10">
+      <main className="max-w-7xl mx-auto px-6 lg:px-8 mt-10 pb-20">
         {/* Header Section */}
-        <div className="mb-10 text-center sm:text-left flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 animate-in fade-in duration-700">
           <div>
-            <h1 className="text-4xl font-outfit font-bold text-slate-900 tracking-tight drop-shadow-sm">Your Daily Overview</h1>
-            <p className="text-base text-slate-600 mt-2 font-medium">Breathe deeply. Here is your personalized wellness snapshot.</p>
+            <h1 className="text-[2rem] font-bold text-[#041E42] tracking-tight mb-2">Clinical Dashboard</h1>
+            <p className="text-[15px] text-[#475569]">Comprehensive overview of behavioral and emotional telemetry.</p>
           </div>
-          <div className="flex gap-3">
-             <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-white/50 px-4 py-2 rounded-full shadow-sm text-sm font-semibold text-orange-600">
-                <Flame size={16} /> 3 Day Streak
-             </div>
-             <div className="flex items-center gap-2 bg-white/60 backdrop-blur-sm border border-white/50 px-4 py-2 rounded-full shadow-sm text-sm font-semibold text-emerald-600">
-                <Award size={16} /> 12 Badges
-             </div>
+          <div className="flex flex-wrap gap-3">
+            <div className={`flex items-center gap-2 px-4 py-2 rounded border text-[13px] font-bold uppercase tracking-wider ${trendColor}`}>
+              {trendIcon} {trendLabel}
+            </div>
+            <div className="flex items-center gap-2 bg-white border border-[#E2E8F0] text-[#041E42] px-4 py-2 rounded text-[13px] font-bold uppercase tracking-wider shadow-sm">
+              <span className="text-[#001CD6]">{moodTrend?.recentLogs?.length ?? 0}</span> Data Points
+            </div>
           </div>
         </div>
 
-        {/* Action Cards (Glassmorphism) */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+        {/* Clinical Anomaly Alert */}
+        {moodTrend?.anomalyDetected && (
+          <div className="mb-10 bg-white border-l-4 border-l-[#D32F2F] border-y border-r border-[#E2E8F0] rounded-r p-6 flex items-start gap-4 shadow-[0_4px_12px_rgba(211,47,47,0.05)] animate-in fade-in slide-in-from-bottom-2 duration-500">
+            <AlertCircle size={24} className="text-[#D32F2F] shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="text-base font-bold text-[#D32F2F] uppercase tracking-wide">Clinical Alert: Intervention Recommended</h3>
+              <p className="text-[15px] text-[#475569] mt-2 mb-4 leading-relaxed">{moodTrend.anomalyDescription}</p>
+              <Link href="/chat" className="inline-flex items-center text-[13px] font-bold text-white bg-[#D32F2F] hover:bg-[#B71C1C] px-5 py-2.5 rounded transition-colors shadow-sm">
+                Initiate AI Assessment <ArrowRight size={16} className="ml-2" />
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Clinical Modules Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           
-          <Link href="/chat" className="group block h-full transform hover:-translate-y-1 transition-all duration-300">
-            <div className="h-full bg-white/50 backdrop-blur-lg rounded-3xl p-6 border border-white/60 hover:bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(2,136,209,0.15)] flex flex-col relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                 <MessageSquare size={80} />
+          {/* AI Assessment Card */}
+          <Link href="/chat" className="group flex flex-col h-full bg-white rounded border border-[#E2E8F0] p-8 hover:border-[#001CD6] hover:shadow-[0_8px_30px_rgba(0,28,214,0.08)] transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-[#001CD6] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 rounded bg-[#F0F4FA] flex items-center justify-center text-[#001CD6]">
+                <MessageSquare size={28} strokeWidth={1.5} />
               </div>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 bg-gradient-to-br from-blue-400 to-blue-600 text-white rounded-2xl shadow-md">
-                  <MessageSquare size={24} />
-                </div>
-                <h3 className="text-xl font-outfit font-semibold text-slate-800">AI Companion</h3>
-              </div>
-              <p className="text-slate-600 text-sm flex-1 mb-6 leading-relaxed font-medium">Chat with your empathetic, 24/7 mental health assistant. Practice roleplay scenarios or vent safely.</p>
-              <div className="flex items-center text-blue-600 font-bold text-sm bg-blue-50/50 rounded-xl px-4 py-2 self-start group-hover:bg-blue-100/50 transition-colors">
-                Start Session <Sparkles size={14} className="ml-2" />
-              </div>
+              <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#001CD6] transition-colors transform group-hover:translate-x-1" />
             </div>
+            <h3 className="text-xl font-bold text-[#041E42] mb-3">AI Diagnostic Interface</h3>
+            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed">
+              Engage with the clinical AI agent for therapeutic dialogue based on CBT & DBT modalities.
+            </p>
           </Link>
 
-          <Link href="/workbooks" className="group block h-full transform hover:-translate-y-1 transition-all duration-300">
-            <div className="h-full bg-white/50 backdrop-blur-lg rounded-3xl p-6 border border-white/60 hover:bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(165,214,167,0.2)] flex flex-col relative overflow-hidden">
-              <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                 <BookOpen size={80} />
+          {/* Workbooks Card */}
+          <Link href="/workbooks" className="group flex flex-col h-full bg-white rounded border border-[#E2E8F0] p-8 hover:border-[#00CCFF] hover:shadow-[0_8px_30px_rgba(0,204,255,0.08)] transition-all duration-300 relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-1 bg-[#00CCFF] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 rounded bg-[#E0F7FA] flex items-center justify-center text-[#00B8D4]">
+                <BookOpen size={28} strokeWidth={1.5} />
               </div>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 bg-gradient-to-br from-emerald-400 to-teal-500 text-white rounded-2xl shadow-md">
-                  <BookOpen size={24} />
-                </div>
-                <h3 className="text-xl font-outfit font-semibold text-slate-800">CBT Workbooks</h3>
-              </div>
-              <p className="text-slate-600 text-sm flex-1 mb-6 leading-relaxed font-medium">Engage with guided modules designed to reframe negative thoughts and boost your coping skills.</p>
-              <div className="flex items-center text-emerald-700 font-bold text-sm bg-emerald-50/50 rounded-xl px-4 py-2 self-start group-hover:bg-emerald-100/50 transition-colors">
-                Continue Module <span className="ml-2 text-lg leading-none">→</span>
-              </div>
+               <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#00B8D4] transition-colors transform group-hover:translate-x-1" />
             </div>
+            <h3 className="text-xl font-bold text-[#041E42] mb-3">Clinical Protocols</h3>
+            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed mb-6">
+              Access structured behavioral modules including Cognitive Restructuring and Behavioral Activation.
+            </p>
+            {recentWorkbooks.length > 0 && (
+              <div className="mt-auto border-t border-[#E2E8F0] pt-4">
+                <span className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider block mb-1">Active Protocol</span>
+                <span className="text-[13px] font-bold text-[#041E42] truncate block">
+                  {recentWorkbooks[0]?.title}
+                </span>
+              </div>
+            )}
           </Link>
 
-          <div className="group block cursor-pointer h-full transform hover:-translate-y-1 transition-all duration-300" onClick={() => router.push('/chat')}>
-            <div className="h-full bg-white/50 backdrop-blur-lg rounded-3xl p-6 border border-white/60 hover:bg-white/70 shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(255,152,0,0.15)] flex flex-col relative overflow-hidden">
-               <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
-                 <HeartPulse size={80} />
+          {/* Telemetry Card */}
+          <div className="group flex flex-col h-full bg-white rounded border border-[#E2E8F0] p-8 hover:border-[#009384] hover:shadow-[0_8px_30px_rgba(0,147,132,0.08)] transition-all duration-300 relative overflow-hidden cursor-pointer" onClick={() => router.push('/chat')}>
+             <div className="absolute top-0 left-0 w-full h-1 bg-[#009384] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 rounded bg-[#E0F2F1] flex items-center justify-center text-[#009384]">
+                <Activity size={28} strokeWidth={1.5} />
               </div>
-              <div className="flex items-center gap-4 mb-4">
-                <div className="p-3 bg-gradient-to-br from-orange-400 to-rose-400 text-white rounded-2xl shadow-md">
-                  <HeartPulse size={24} />
-                </div>
-                <h3 className="text-xl font-outfit font-semibold text-slate-800">Mood & Habits</h3>
-              </div>
-              <p className="text-slate-600 text-sm flex-1 mb-6 leading-relaxed font-medium">Log your daily vitals, track your habits, and build a routine that supports your mental wellness.</p>
-              <div className="flex items-center text-orange-600 font-bold text-sm bg-orange-50/50 rounded-xl px-4 py-2 self-start group-hover:bg-orange-100/50 transition-colors">
-                Log Today <span className="ml-2 text-lg leading-none">+</span>
-              </div>
+               <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#009384] transition-colors transform group-hover:translate-x-1" />
             </div>
-          </div>
-        </div>
-
-        {/* Analytics Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Chart */}
-          <div className="lg:col-span-2 bg-white/60 backdrop-blur-xl rounded-3xl p-8 border border-white/70 shadow-sm relative overflow-hidden">
-             {/* Subtle gradient behind chart */}
-            <div className="absolute inset-0 bg-gradient-to-t from-blue-50/30 to-transparent pointer-events-none"></div>
-            
-            <div className="flex justify-between items-center mb-8 relative z-10">
-              <h2 className="text-xl font-outfit font-bold text-slate-800 tracking-wide">Mood Trends</h2>
-              <span className="text-xs font-bold text-emerald-700 bg-emerald-100/80 px-3 py-1 rounded-full border border-emerald-200 shadow-sm backdrop-blur-sm">
-                +15% Growth
+            <h3 className="text-xl font-bold text-[#041E42] mb-3">Telemetry & Logs</h3>
+            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed mb-6">
+              {moodTrend?.sevenDayAverage
+                ? `7-Day Moving Avg: ${moodTrend.sevenDayAverage}/5. Input daily biometrics to ensure accurate analytical models.`
+                : 'Input daily behavioral data to establish baseline telemetry for predictive modeling.'}
+            </p>
+            <div className="mt-auto">
+              <span className="inline-flex items-center justify-center text-[13px] font-bold text-white bg-[#041E42] hover:bg-[#001CD6] px-5 py-2.5 rounded transition-colors w-full uppercase tracking-wide">
+                Log New Data Point
               </span>
             </div>
+          </div>
+          
+          {/* Voice Journal Card */}
+          <Link href="/voice-journal" className="group flex flex-col h-full bg-white rounded border border-[#E2E8F0] p-8 hover:border-[#9C27B0] hover:shadow-[0_8px_30px_rgba(156,39,176,0.08)] transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-[#9C27B0] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 rounded bg-[#F3E5F5] flex items-center justify-center text-[#9C27B0]">
+                <Mic size={28} strokeWidth={1.5} />
+              </div>
+              <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#9C27B0] transition-colors transform group-hover:translate-x-1" />
+            </div>
+            <h3 className="text-xl font-bold text-[#041E42] mb-3">Voice Journal</h3>
+            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed mb-6">
+              Express your thoughts naturally through speech with AI cognitive analysis.
+            </p>
+          </Link>
+
+          {/* Calm Space Card */}
+          <Link href="/calm" className="group flex flex-col h-full bg-white rounded border border-[#E2E8F0] p-8 hover:border-[#3F51B5] hover:shadow-[0_8px_30px_rgba(63,81,181,0.08)] transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-[#3F51B5] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 rounded bg-[#E8EAF6] flex items-center justify-center text-[#3F51B5]">
+                <Wind size={28} strokeWidth={1.5} />
+              </div>
+              <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#3F51B5] transition-colors transform group-hover:translate-x-1" />
+            </div>
+            <h3 className="text-xl font-bold text-[#041E42] mb-3">Calm Space</h3>
+            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed mb-6">
+              Immediate access to grounding exercises and distress tolerance techniques.
+            </p>
+          </Link>
+
+          {/* Insights Card */}
+          <Link href="/insights" className="group flex flex-col h-full bg-white rounded border border-[#E2E8F0] p-8 hover:border-[#FF9800] hover:shadow-[0_8px_30px_rgba(255,152,0,0.08)] transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-[#FF9800] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+            <div className="flex items-center justify-between mb-6">
+              <div className="w-14 h-14 rounded bg-[#FFF3E0] flex items-center justify-center text-[#FF9800]">
+                <LineChartIcon size={28} strokeWidth={1.5} />
+              </div>
+              <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#FF9800] transition-colors transform group-hover:translate-x-1" />
+            </div>
+            <h3 className="text-xl font-bold text-[#041E42] mb-3">Biopsychosocial Insights</h3>
+            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed mb-6">
+              Discover correlations between your daily habits and longitudinal mood trends.
+            </p>
+          </Link>
+        </div>
+
+        {/* Analytics & Insights Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
+          
+          {/* Scientific Chart Card */}
+          <div className="lg:col-span-2 bg-white rounded border border-[#E2E8F0] p-8 shadow-[0_2px_12px_rgba(4,30,66,0.03)] flex flex-col">
+            <div className="flex justify-between items-start mb-8">
+              <div>
+                <h2 className="text-lg font-bold text-[#041E42] uppercase tracking-wide flex items-center gap-2">
+                  <Activity size={18} className="text-[#001CD6]" /> Longitudinal Efficacy
+                </h2>
+                <p className="text-[13px] text-[#64748B] mt-1 font-medium">Self-reported mood index (trailing 7 days)</p>
+              </div>
+              {moodTrend?.thirtyDayAverage && (
+                <div className="border border-[#CBD5E1] px-4 py-2 rounded text-[12px] font-bold text-[#041E42] bg-[#F8FAFC]">
+                  30D Baseline: {moodTrend.thirtyDayAverage}/5
+                </div>
+              )}
+            </div>
             
-            <div className="h-[280px] w-full relative z-10">
-              <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={mockMoodData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
-                  <defs>
-                    <linearGradient id="colorMood" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="5%" stopColor="#0288D1" stopOpacity={0.3}/>
-                      <stop offset="95%" stopColor="#0288D1" stopOpacity={0}/>
-                    </linearGradient>
-                  </defs>
-                  <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 13, fontWeight: 500}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 13, fontWeight: 500}} domain={[1, 5]} ticks={[1,2,3,4,5]} />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '16px', border: '1px solid rgba(255,255,255,0.8)', backgroundColor: 'rgba(255,255,255,0.9)', backdropFilter: 'blur(8px)', boxShadow: '0 10px 25px -5px rgb(0 0 0 / 0.1)', fontSize: '14px', fontWeight: 'bold', color: '#1e293b' }}
-                    formatter={(value: any) => [value, 'Mood Rating']}
-                  />
-                  <Line 
-                    type="monotone" 
-                    dataKey="mood" 
-                    stroke="#0288D1" 
-                    strokeWidth={4} 
-                    dot={{ r: 6, strokeWidth: 3, fill: '#fff', stroke: '#0288D1' }}
-                    activeDot={{ r: 8, fill: '#0288D1', stroke: 'rgba(2,136,209,0.3)', strokeWidth: 10 }}
-                  />
-                </LineChart>
-              </ResponsiveContainer>
+            <div className="h-[320px] w-full flex-1">
+              {isLoading ? (
+                <div className="flex items-center justify-center h-full">
+                  <div className="w-8 h-8 border-2 border-[#001CD6] border-t-transparent rounded-full animate-spin"></div>
+                </div>
+              ) : chartData.length > 0 ? (
+                <ResponsiveContainer width="100%" height="100%">
+                  <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                    <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#64748B', fontSize: 12, fontWeight: 600}} dy={15} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B', fontSize: 12, fontWeight: 600}} domain={[1, 5]} ticks={[1,2,3,4,5]} />
+                    {moodTrend?.sevenDayAverage && (
+                      <ReferenceLine y={moodTrend.sevenDayAverage} stroke="#00CCFF" strokeDasharray="3 3" strokeOpacity={0.8} />
+                    )}
+                    <Tooltip 
+                      contentStyle={{ borderRadius: '4px', border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF', color: '#041E42', boxShadow: '0 4px 20px rgba(4,30,66,0.1)', fontSize: '13px', padding: '12px 16px', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#001CD6' }}
+                      formatter={(value: any) => [`${value}/5 — ${moodLabels[Math.round(value)] ?? ''}`, 'Index']}
+                      labelStyle={{ color: '#64748B', marginBottom: '8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                    />
+                    <Line 
+                      type="monotone" 
+                      dataKey="mood" 
+                      stroke="#001CD6" 
+                      strokeWidth={2.5} 
+                      dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#001CD6' }}
+                      activeDot={{ r: 6, fill: '#001CD6', stroke: '#00CCFF', strokeWidth: 4 }}
+                      animationDuration={1000}
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="flex flex-col items-center justify-center h-full text-[#64748B] border-2 border-dashed border-[#E2E8F0] rounded bg-[#F8FAFC]">
+                  <Microscope size={32} className="text-[#CBD5E1] mb-4" />
+                  <p className="font-bold text-[14px] text-[#041E42]">Insufficient Data</p>
+                  <p className="text-[13px] mt-1 text-center max-w-xs">Data collection required to generate longitudinal efficacy reports.</p>
+                </div>
+              )}
             </div>
           </div>
 
-          {/* Activity & AI Insight Log */}
-          <div className="bg-white/60 backdrop-blur-xl rounded-3xl border border-white/70 shadow-sm flex flex-col relative overflow-hidden">
-            <div className="p-6 border-b border-white/50 bg-gradient-to-r from-blue-50/50 to-transparent">
-              <h3 className="text-xl font-outfit font-bold text-slate-800 tracking-wide flex items-center gap-2">
-                <Sparkles size={18} className="text-blue-500" /> AI Insights
+          {/* Clinical Insight & Activity Sidebar */}
+          <div className="flex flex-col gap-6">
+            <div className="bg-[#041E42] rounded p-8 border border-[#041E42] shadow-[0_4px_24px_rgba(4,30,66,0.15)] relative overflow-hidden">
+              <div className="absolute -top-10 -right-10 opacity-10">
+                <Microscope size={140} className="text-[#00CCFF]" />
+              </div>
+              <h3 className="text-[15px] font-bold text-[#00CCFF] uppercase tracking-widest flex items-center gap-2 mb-4 relative z-10">
+                <Sparkles size={16} /> Synthesis Report
               </h3>
+              <p className="text-[15px] text-white leading-relaxed relative z-10 font-medium">
+                {aiInsight ?? 'Processing behavioral metrics...'}
+              </p>
             </div>
-            <div className="p-6 flex-1">
-              <div className="bg-blue-50/80 rounded-2xl p-4 border border-blue-100 mb-6">
-                <p className="text-sm text-blue-900 font-medium italic leading-relaxed">
-                  "You've logged 'anxious' for two days. I recommend trying the **Distress Tolerance** workbook module today. You've got this!"
-                </p>
-              </div>
 
-              <h4 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4">Recent Milestones</h4>
-              <div className="space-y-5">
-                {[
-                  { title: "Completed 'Cognitive Reframing' module", time: "2 hours ago", color: "bg-emerald-400" },
-                  { title: "Logged Mood: 4/5 (Hopeful)", time: "Yesterday", color: "bg-blue-400" },
-                  { title: "Achieved 'Habit Hero' Badge", time: "2 days ago", color: "bg-orange-400" }
-                ].map((item, i) => (
-                  <div key={i} className="flex gap-4 group">
-                    <div className={`mt-1.5 w-3 h-3 rounded-full ${item.color} shrink-0 ring-4 ring-white shadow-sm group-hover:scale-125 transition-transform`}></div>
-                    <div>
-                      <p className="text-sm font-semibold text-slate-800">{item.title}</p>
-                      <p className="text-xs font-medium text-slate-500 mt-1">{item.time}</p>
+            {/* Quick Stats / Recent Activity */}
+            <div className="bg-white rounded border border-[#E2E8F0] p-8 shadow-[0_2px_12px_rgba(4,30,66,0.03)] flex-1">
+              <h3 className="text-[12px] font-bold text-[#64748B] uppercase tracking-[0.1em] mb-6">Recent Protocol Activity</h3>
+              
+              {recentWorkbooks.length > 0 ? (
+                <div className="space-y-5">
+                  {recentWorkbooks.map((wb, i) => (
+                    <div key={wb.id} className="flex gap-4 group cursor-pointer" onClick={() => router.push(`/workbooks/${wb.id}`)}>
+                      <div className="mt-0.5 w-2 h-2 rounded-full bg-[#001CD6] group-hover:scale-150 group-hover:bg-[#00CCFF] transition-all"></div>
+                      <div>
+                        <p className="text-[14px] font-bold text-[#041E42] leading-snug group-hover:text-[#001CD6] transition-colors">{wb.title}</p>
+                        <p className="text-[12px] text-[#64748B] mt-1 font-medium">{new Date(wb.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                      </div>
                     </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-[14px] text-[#64748B]">No protocols initiated.</p>
+              )}
+
+              {moodTrend && (
+                <div className="mt-8 pt-6 border-t border-[#E2E8F0] grid grid-cols-2 gap-4">
+                  <div>
+                    <p className="text-[2.25rem] font-bold text-[#041E42] leading-none mb-1">{moodTrend.sevenDayAverage ?? '—'}</p>
+                    <p className="text-[11px] text-[#64748B] font-bold uppercase tracking-wider">7D Moving Avg</p>
                   </div>
-                ))}
-              </div>
+                  <div>
+                    <p className="text-[2.25rem] font-bold text-[#001CD6] leading-none mb-1">{moodTrend.recentLogs?.length ?? 0}</p>
+                    <p className="text-[11px] text-[#64748B] font-bold uppercase tracking-wider">Data Points</p>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
-
         </div>
       </main>
     </div>

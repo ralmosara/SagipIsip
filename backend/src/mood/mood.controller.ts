@@ -17,4 +17,14 @@ export class MoodController {
   findAll(@Request() req: any) {
     return this.moodService.findAllByUser(req.user.id);
   }
+
+  /**
+   * Returns mood trend analytics: 7-day/30-day averages, daily breakdown,
+   * trend direction, and anomaly detection.
+   * Source: AI-Driven Innovations in Healthcare (Langabeer & Lalani)
+   */
+  @Get('trend')
+  getMoodTrend(@Request() req: any) {
+    return this.moodService.getMoodTrend(req.user.id);
+  }
 }

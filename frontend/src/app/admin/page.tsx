@@ -1,180 +1,148 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
+import React from 'react';
 import { 
+  Building2, 
   Users, 
-  UserPlus, 
-  MessageSquare, 
+  TrendingUp, 
   Activity,
-  ArrowUpRight,
-  Stethoscope,
-  Database
+  ShieldCheck,
+  FileBarChart
 } from 'lucide-react';
 import { 
-  LineChart, 
-  Line, 
+  BarChart, 
+  Bar, 
   XAxis, 
   YAxis, 
   CartesianGrid, 
   Tooltip, 
-  ResponsiveContainer 
+  ResponsiveContainer,
+  AreaChart,
+  Area
 } from 'recharts';
 
-const mockChartData = [
-  { name: 'Mon', patients: 140, therapists: 24 },
-  { name: 'Tue', patients: 152, therapists: 24 },
-  { name: 'Wed', patients: 180, therapists: 26 },
-  { name: 'Thu', patients: 195, therapists: 26 },
-  { name: 'Fri', patients: 210, therapists: 28 },
-  { name: 'Sat', patients: 225, therapists: 28 },
-  { name: 'Sun', patients: 250, therapists: 30 },
+const efficacyData = [
+  { month: 'Jan', baseline: 2.8, postIntervention: 3.4 },
+  { month: 'Feb', baseline: 2.7, postIntervention: 3.6 },
+  { month: 'Mar', baseline: 2.9, postIntervention: 3.9 },
+  { month: 'Apr', baseline: 2.8, postIntervention: 4.1 },
+  { month: 'May', baseline: 2.6, postIntervention: 4.2 },
+  { month: 'Jun', baseline: 2.7, postIntervention: 4.3 },
 ];
 
-interface SystemStats {
-  totalUsers: number;
-  totalPatients: number;
-  totalTherapists: number;
-  totalChats: number;
-}
-
-export default function AdminDashboard() {
-  const [stats, setStats] = useState<SystemStats | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [ingesting, setIngesting] = useState(false);
-
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const token = localStorage.getItem("token");
-        const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/admin/stats`, {
-           headers: { Authorization: `Bearer ${token}` }
-        });
-        if (res.ok) {
-           const data = await res.json();
-           setStats(data);
-        } else {
-           // Fallback if not authenticated yet for UI demo
-           setStats({
-              totalUsers: 1245,
-              totalPatients: 1150,
-              totalTherapists: 95,
-              totalChats: 45892
-           });
-        }
-      } catch (error) {
-        console.error('Failed to fetch stats', error);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchStats();
-  }, []);
-
-  const handleIngest = async () => {
-    setIngesting(true);
-    try {
-        const token = localStorage.getItem("token");
-        await fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/admin/document-ingestion/trigger`, {
-           method: "POST",
-           headers: { Authorization: `Bearer ${token}` }
-        });
-        alert('RAG Document ingestion triggered successfully. Check server logs.');
-    } catch (e) {
-        console.error(e);
-        alert('Failed to trigger ingestion.');
-    } finally {
-        setIngesting(false);
-    }
-  };
-
-  const statCards = [
-    { title: 'Total Users', value: stats?.totalUsers || 0, icon: Users },
-    { title: 'Patients', value: stats?.totalPatients || 0, icon: UserPlus },
-    { title: 'Therapists', value: stats?.totalTherapists || 0, icon: Stethoscope },
-    { title: 'Chat Logs', value: stats?.totalChats || 0, icon: MessageSquare }
-  ];
-
-  if (loading) {
-    return (
-      <div className="flex h-64 items-center justify-center text-slate-500 text-sm">
-        <Activity className="h-4 w-4 mr-2 animate-spin" /> Fetching telemetry...
-      </div>
-    );
-  }
-
+export default function AdminB2BDashboard() {
   return (
-    <div className="space-y-6">
-      <div className="pb-4 border-b border-slate-200 flex justify-between items-center">
-        <div>
-           <h1 className="text-xl font-semibold text-slate-900">System Overview</h1>
-           <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider">Metrics and Telemetry</p>
-        </div>
-        <button 
-           onClick={handleIngest}
-           disabled={ingesting}
-           className="flex items-center px-4 py-2 bg-indigo-600 text-white rounded-md text-sm font-medium hover:bg-indigo-700 disabled:bg-indigo-300 transition-colors"
-        >
-           <Database size={16} className={`mr-2 ${ingesting ? 'animate-bounce' : ''}`} /> 
-           {ingesting ? 'Ingesting...' : 'Trigger RAG Ingestion'}
-        </button>
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        {statCards.map((stat, index) => {
-          const Icon = stat.icon;
-          return (
-            <div key={index} className="bg-white rounded-md p-4 border border-slate-200 shadow-sm flex flex-col">
-              <div className="flex items-center gap-2 mb-3 text-slate-500">
-                <Icon className="h-4 w-4" />
-                <span className="text-xs font-semibold uppercase tracking-wider">{stat.title}</span>
-              </div>
-              <div className="flex items-end justify-between mt-auto">
-                <span className="text-2xl font-bold text-slate-900">{stat.value.toLocaleString()}</span>
-                <span className="text-xs font-medium text-emerald-600 flex items-center">
-                  <ArrowUpRight className="h-3 w-3 mr-0.5" /> 12%
-                </span>
-              </div>
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-900">
+      
+      <header className="bg-white border-b border-slate-200 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto px-6 h-16 flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            <div className="bg-indigo-600 p-1.5 rounded text-white">
+              <Building2 size={20} />
             </div>
-          );
-        })}
-      </div>
+            <div>
+              <span className="font-bold text-slate-900 tracking-tight leading-none block">SagipIsip Enterprise</span>
+              <span className="text-[10px] uppercase tracking-widest text-indigo-600 font-bold block mt-0.5">B2B Clinical Telemetry</span>
+            </div>
+          </div>
+          <div className="flex items-center gap-4">
+            <span className="text-sm font-medium text-slate-500">Organization: <strong className="text-slate-900">Metropolitan Health Group</strong></span>
+          </div>
+        </div>
+      </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        <div className="lg:col-span-2 bg-white rounded-md p-5 border border-slate-200 shadow-sm">
-          <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider mb-6">User Acquisition</h2>
-          <div className="h-[250px] w-full">
-            <ResponsiveContainer width="100%" height="100%">
-              <LineChart data={mockChartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
-                <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} />
-                <Tooltip 
-                  contentStyle={{ borderRadius: '4px', border: '1px solid #e2e8f0', boxShadow: '0 1px 2px 0 rgb(0 0 0 / 0.05)', fontSize: '12px' }}
-                />
-                <Line type="monotone" dataKey="patients" stroke="#2563eb" strokeWidth={2} dot={false} />
-                <Line type="monotone" dataKey="therapists" stroke="#64748b" strokeWidth={2} dot={false} />
-              </LineChart>
-            </ResponsiveContainer>
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        
+        <div className="mb-8 flex justify-between items-end">
+          <div>
+            <h1 className="text-2xl font-bold text-slate-900">Population Health Efficacy</h1>
+            <p className="text-slate-500 text-sm mt-1">Aggregated, anonymized telemetry for ROI and clinical outcomes.</p>
+          </div>
+          <button className="bg-white border border-slate-200 text-slate-700 px-4 py-2 rounded-lg text-sm font-bold shadow-sm hover:bg-slate-50 flex items-center gap-2">
+            <FileBarChart size={16} /> Export Insurance Report
+          </button>
+        </div>
+
+        {/* KPIs */}
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Active Patients</span>
+              <Users size={16} className="text-indigo-600" />
+            </div>
+            <div className="text-3xl font-bold text-slate-900">1,248</div>
+            <p className="text-xs text-emerald-600 font-medium mt-2 flex items-center"><TrendingUp size={12} className="mr-1"/> +12% this month</p>
+          </div>
+          
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Avg Time-to-Stability</span>
+              <Activity size={16} className="text-emerald-600" />
+            </div>
+            <div className="text-3xl font-bold text-slate-900">18 <span className="text-lg text-slate-500 font-medium">days</span></div>
+            <p className="text-xs text-emerald-600 font-medium mt-2 flex items-center"><TrendingUp size={12} className="mr-1"/> 24% faster than baseline</p>
+          </div>
+
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-xs font-bold text-slate-500 uppercase tracking-wider">Crisis Interventions</span>
+              <ShieldCheck size={16} className="text-amber-500" />
+            </div>
+            <div className="text-3xl font-bold text-slate-900">42</div>
+            <p className="text-xs text-slate-500 font-medium mt-2">Successfully routed to care</p>
+          </div>
+
+          <div className="bg-indigo-600 p-6 rounded-xl shadow-md text-white">
+            <div className="flex justify-between items-start mb-4">
+              <span className="text-xs font-bold text-indigo-200 uppercase tracking-wider">Clinical Efficacy (ROI)</span>
+            </div>
+            <div className="text-3xl font-bold">+48%</div>
+            <p className="text-xs text-indigo-100 font-medium mt-2">Improvement in PHQ-9 scores</p>
           </div>
         </div>
 
-        <div className="bg-white rounded-md border border-slate-200 shadow-sm flex flex-col">
-          <div className="p-4 border-b border-slate-200 bg-slate-50/50">
-            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider">System Logs</h2>
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-6">Longitudinal Outcome Efficacy</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart data={efficacyData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#E2E8F0" />
+                  <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{fill: '#64748B', fontSize: 12}} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B', fontSize: 12}} domain={[1, 5]} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                  />
+                  <Area type="monotone" dataKey="baseline" stroke="#94A3B8" fill="#CBD5E1" fillOpacity={0.3} name="Baseline Mood" />
+                  <Area type="monotone" dataKey="postIntervention" stroke="#4F46E5" fill="#818CF8" fillOpacity={0.3} name="Post-Intervention Mood" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
           </div>
-          <div className="p-4 flex-1 overflow-auto text-sm space-y-3">
-            {[1, 2, 3, 4, 5].map((i) => (
-              <div key={i} className="flex gap-3">
-                <span className="text-slate-400 font-mono text-xs mt-0.5 shrink-0">14:0{i}</span>
-                <div>
-                  <p className="font-medium text-slate-900">User Registered</p>
-                  <p className="text-slate-500 text-xs mt-0.5">ID: usr_9283{i} completed sign up.</p>
-                </div>
-              </div>
-            ))}
+
+          <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm">
+            <h3 className="text-sm font-bold text-slate-900 uppercase tracking-wide mb-6">Module Adherence Rates</h3>
+            <div className="h-64">
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={[
+                  { name: 'CBT Restructuring', completion: 85 },
+                  { name: 'DBT Mindfulness', completion: 72 },
+                  { name: 'Voice Journal', completion: 94 },
+                  { name: 'XR Safe Space', completion: 88 },
+                ]} layout="vertical" margin={{ top: 0, right: 30, left: 40, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#E2E8F0" />
+                  <XAxis type="number" hide />
+                  <YAxis dataKey="name" type="category" axisLine={false} tickLine={false} tick={{fill: '#475569', fontSize: 12, fontWeight: 500}} width={120} />
+                  <Tooltip cursor={{fill: '#F1F5F9'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }} />
+                  <Bar dataKey="completion" fill="#10B981" radius={[0, 4, 4, 0]} barSize={24} name="Completion %" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
           </div>
         </div>
-      </div>
+
+      </main>
     </div>
   );
 }

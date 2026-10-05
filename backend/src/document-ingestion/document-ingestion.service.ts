@@ -1,8 +1,11 @@
 import { Injectable, Logger } from '@nestjs/common';
 import * as fs from 'fs';
 import * as path from 'path';
+const pdfParseRaw = require('pdf-parse');
+const pdfParse = pdfParseRaw.default || pdfParseRaw;
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfParse = require('pdf-parse');
+const EPubRaw = require('epub2');
+const EPub = EPubRaw.default || EPubRaw.EPub || EPubRaw;
 import { PrismaService } from '../prisma/prisma.service';
 import { Ollama } from 'ollama';
 
@@ -17,8 +20,14 @@ export class DocumentIngestionService {
   constructor(private prisma: PrismaService) {}
 
   /**
-   * Step 1: Ingest all PDFs from the books directory.
+   * Step 1: Ingest all PDFs and EPUBs from the books directory.
    * Parses text, chunks it, generates embeddings via Ollama, stores in DB.
+   *
+   * Previously, 8 of 22 books (.epub files) were entirely skipped, meaning
+   * the RAG system had no access to: Mental Health Workbook (CBT/DBT/Attachment Theory),
+   * AI for Doctors, Helping Children, Biopsychosocial Toolkit, Working with Dissociation,
+   * Integrating AI into Mental Health Care, and Where to Start (Mental Health America).
+   * This fix restores that clinical knowledge to the AI companion.
    */
   async processBooksDirectory() {
     const booksDir = path.join(process.cwd(), '..', 'books');
@@ -35,7 +44,6 @@ export class DocumentIngestionService {
       const filePath = path.join(booksDir, file);
 
       if (file.endsWith('.pdf')) {
-        // Check if already ingested
         const existing = await this.prisma.documentChunk.findFirst({
           where: { bookTitle: file },
         });
@@ -45,7 +53,14 @@ export class DocumentIngestionService {
         }
         await this.ingestPdf(filePath, file);
       } else if (file.endsWith('.epub')) {
-        this.logger.log(`Skipping EPUB ${file} (epub parser not installed).`);
+        const existing = await this.prisma.documentChunk.findFirst({
+          where: { bookTitle: file },
+        });
+        if (existing) {
+          this.logger.log(`Skipping EPUB ${file} — already ingested.`);
+          continue;
+        }
+        await this.ingestEpub(filePath, file);
       }
     }
 
@@ -58,13 +73,11 @@ export class DocumentIngestionService {
    */
   async retrieveRelevantContext(query: string, topK = 4): Promise<string> {
     try {
-      // Generate embedding for the query
       const queryEmbedding = await this.generateEmbedding(query);
       if (!queryEmbedding) return '';
 
       const vectorString = `[${queryEmbedding.join(',')}]`;
 
-      // Cosine similarity search using pgvector's <=> operator via raw SQL
       const results: Array<{ content: string; bookTitle: string }> =
         await this.prisma.$queryRawUnsafe(
           `SELECT content, "bookTitle"
@@ -106,35 +119,116 @@ export class DocumentIngestionService {
       const chunks = this.chunkText(text, 800);
       this.logger.log(`Generated ${chunks.length} chunks for "${title}"`);
 
-      let embedded = 0;
-      for (const chunk of chunks) {
-        const embedding = await this.generateEmbedding(chunk);
-
-        if (embedding) {
-          const vectorString = `[${embedding.join(',')}]`;
-          // Use raw SQL to insert with vector type (Prisma doesn't support Unsupported types natively)
-          await this.prisma.$executeRawUnsafe(
-            `INSERT INTO "DocumentChunk" (id, "bookTitle", content, embedding, "createdAt")
-             VALUES (gen_random_uuid(), $1, $2, $3::vector, NOW())`,
-            title,
-            chunk,
-            vectorString,
-          );
-          embedded++;
-        } else {
-          // Store without embedding (fallback)
-          await this.prisma.documentChunk.create({
-            data: { bookTitle: title, content: chunk },
-          });
-        }
-      }
-
-      this.logger.log(
-        `Finished ingesting "${title}": ${embedded}/${chunks.length} chunks embedded.`,
-      );
+      await this.embedAndStore(chunks, title);
     } catch (err) {
       this.logger.error(`Failed to parse PDF "${title}"`, err);
     }
+  }
+
+  /**
+   * Parses EPUB files and extracts plain text for RAG ingestion.
+   * This unlocks the following books previously inaccessible to the AI:
+   * - Mental Health Workbook 7-in-1 (CBT, DBT, Attachment Theory)
+   * - AI for Doctors and Nurse Practitioners
+   * - Helping Children: Principles of Good Practice
+   * - The Biopsychosocial Multiaxial Toolkit
+   * - Working with Dissociation in Clinical Practice
+   * - Integrating AI into Mental Health Care
+   * - Where to Start: A Survival Guide to Anxiety & Depression
+   * - Mental Health Workbook (David Lawson)
+   */
+  private async ingestEpub(filePath: string, title: string) {
+    this.logger.log(`Processing EPUB: ${title}`);
+
+    try {
+      const text = await this.extractEpubText(filePath);
+      if (!text || text.trim().length < 100) {
+        this.logger.warn(`EPUB "${title}" produced insufficient text. Skipping.`);
+        return;
+      }
+
+      const chunks = this.chunkText(text, 800);
+      this.logger.log(`Generated ${chunks.length} chunks for EPUB "${title}"`);
+
+      await this.embedAndStore(chunks, title);
+    } catch (err) {
+      this.logger.error(`Failed to parse EPUB "${title}"`, err);
+    }
+  }
+
+  /**
+   * Extracts raw text from an EPUB file using epub2.
+   * Strips HTML tags to get clean plain text for embedding.
+   */
+  private extractEpubText(filePath: string): Promise<string> {
+    return new Promise((resolve, reject) => {
+      const epub = new EPub(filePath);
+
+      epub.on('error', (err: Error) => reject(err));
+
+      epub.on('end', async () => {
+        const textParts: string[] = [];
+        const chapterIds: string[] = epub.flow.map((chapter: any) => chapter.id);
+
+        for (const chapterId of chapterIds) {
+          await new Promise<void>((res) => {
+            epub.getChapter(chapterId, (err: Error | null, text: string) => {
+              if (!err && text) {
+                // Strip HTML tags to get plain text
+                const plain = text
+                  .replace(/<[^>]+>/g, ' ')
+                  .replace(/&nbsp;/g, ' ')
+                  .replace(/&amp;/g, '&')
+                  .replace(/&lt;/g, '<')
+                  .replace(/&gt;/g, '>')
+                  .replace(/&quot;/g, '"')
+                  .replace(/&#\d+;/g, ' ')
+                  .replace(/\s+/g, ' ')
+                  .trim();
+                if (plain.length > 50) {
+                  textParts.push(plain);
+                }
+              }
+              res();
+            });
+          });
+        }
+
+        resolve(textParts.join('\n\n'));
+      });
+
+      epub.parse();
+    });
+  }
+
+  /**
+   * Embeds an array of text chunks and stores them in the DocumentChunk table.
+   */
+  private async embedAndStore(chunks: string[], title: string): Promise<void> {
+    let embedded = 0;
+    for (const chunk of chunks) {
+      const embedding = await this.generateEmbedding(chunk);
+
+      if (embedding) {
+        const vectorString = `[${embedding.join(',')}]`;
+        await this.prisma.$executeRawUnsafe(
+          `INSERT INTO "DocumentChunk" (id, "bookTitle", content, embedding, "createdAt")
+           VALUES (gen_random_uuid(), $1, $2, $3::vector, NOW())`,
+          title,
+          chunk,
+          vectorString,
+        );
+        embedded++;
+      } else {
+        await this.prisma.documentChunk.create({
+          data: { bookTitle: title, content: chunk },
+        });
+      }
+    }
+
+    this.logger.log(
+      `Finished ingesting "${title}": ${embedded}/${chunks.length} chunks embedded.`,
+    );
   }
 
   /**
@@ -149,10 +243,9 @@ export class DocumentIngestionService {
       });
       return response.embedding;
     } catch {
-      // Try llama3 as fallback embedding model
       try {
         const response = await ollama.embeddings({
-          model: 'llama3',
+          model: process.env.OLLAMA_MODEL || 'llama3',
           prompt: text,
         });
         return response.embedding;
@@ -170,7 +263,7 @@ export class DocumentIngestionService {
 
     for (const p of paragraphs) {
       const cleaned = p.replace(/\s+/g, ' ').trim();
-      if (!cleaned || cleaned.length < 20) continue; // Skip very short paragraphs
+      if (!cleaned || cleaned.length < 20) continue;
 
       if (currentChunk.length + cleaned.length > chunkSize) {
         if (currentChunk.trim()) chunks.push(currentChunk.trim());
