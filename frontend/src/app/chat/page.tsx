@@ -9,6 +9,7 @@ import Link from 'next/link';
 interface Message {
   sender: "user" | "ai";
   text: string;
+  hasRagContext?: boolean;
 }
 
 export default function ChatSession() {
@@ -41,12 +42,20 @@ export default function ChatSession() {
     fetch(`${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/chat/history`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-    .then(res => res.json())
+    .then(res => {
+      if (res.status === 401) {
+        localStorage.removeItem("token");
+        window.location.href = "/auth";
+        throw new Error("Unauthorized");
+      }
+      return res.json();
+    })
     .then(data => {
       if (Array.isArray(data)) {
         setMessages(data.map((msg: any) => ({
           sender: msg.sender,
-          text: msg.message
+          text: msg.message,
+          hasRagContext: msg.hasRagContext
         })));
       }
     })
@@ -184,10 +193,24 @@ export default function ChatSession() {
                       ) : isCrisis ? (
                         <div className="bg-rose-200 p-1.5 rounded-full"><ShieldAlert size={16} className="text-rose-700" /></div>
                       ) : (
-                        <div className="bg-blue-100 p-1.5 rounded-full"><Bot size={16} className="text-blue-600" /></div>
+                        <div className="bg-blue-100 p-1.5 rounded-full relative">
+                          <Bot size={16} className="text-blue-600" />
+                          {msg.hasRagContext && (
+                            <div className="absolute -top-1 -right-1 bg-green-500 rounded-full p-0.5" title="Used Medical Knowledge Base">
+                              <Sparkles size={8} className="text-white" />
+                            </div>
+                          )}
+                        </div>
                       )}
                     </div>
-                    <div className={`leading-relaxed whitespace-pre-wrap font-medium text-[15px] ${isCrisis ? 'font-semibold' : ''}`}>{msg.text}</div>
+                    <div className={`leading-relaxed whitespace-pre-wrap font-medium text-[15px] ${isCrisis ? 'font-semibold' : ''}`}>
+                      {msg.text}
+                      {msg.hasRagContext && (
+                        <span className="block mt-2 text-xs text-green-600 font-semibold border-t border-green-100 pt-1">
+                          📚 Guided by Clinical Library
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               );

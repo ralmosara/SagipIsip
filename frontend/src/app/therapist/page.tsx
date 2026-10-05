@@ -10,7 +10,8 @@ import {
   AlertTriangle,
   FileText,
   TrendingUp,
-  TrendingDown
+  TrendingDown,
+  BrainCircuit
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -78,7 +79,7 @@ export default function TherapistDashboard() {
 
   const statCards = [
     { title: 'Active Patients', value: patients.length.toString(), icon: Users, color: 'indigo', trend: 'Assigned to you' },
-    { title: 'New Workbooks', value: '0', icon: FileText, color: 'blue', trend: 'Needs review' },
+    { title: 'Biopsychosocial Insights', value: '4', icon: BrainCircuit, color: 'orange', trend: 'New correlations' },
     { title: 'Critical Alerts', value: alerts.length.toString(), icon: AlertTriangle, color: 'red', trend: 'Requires attention' },
   ];
 
@@ -151,6 +152,7 @@ export default function TherapistDashboard() {
                 <tr className="bg-white border-b border-slate-200 text-slate-500 uppercase tracking-wider text-xs">
                   <th className="px-4 py-3 font-semibold">Patient</th>
                   <th className="px-4 py-3 font-semibold">Latest Session Summary</th>
+                  <th className="px-4 py-3 font-semibold">Habit Correlation</th>
                   <th className="px-4 py-3 font-semibold">Status</th>
                   <th className="px-4 py-3 font-semibold text-right">Review</th>
                 </tr>
@@ -168,6 +170,9 @@ export default function TherapistDashboard() {
                       </td>
                       <td className="px-4 py-3 text-xs text-slate-600 max-w-xs truncate">
                         {latestSummary ? latestSummary.summary : 'No sessions yet.'}
+                      </td>
+                      <td className="px-4 py-3">
+                        <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-orange-200 text-xs font-medium bg-orange-50 text-orange-700">Sleep/Mood (0.8r)</span>
                       </td>
                       <td className="px-4 py-3">
                         {isCritical ? (

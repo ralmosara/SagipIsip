@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { BookOpen, Plus, Activity, ArrowRight, Home, Sparkles } from "lucide-react";
+import { BookOpen, Plus, Activity, ArrowRight, Home, Sparkles, Trophy, Star, Shield } from "lucide-react";
 import Link from 'next/link';
 
 interface WorkbookEntry {
@@ -78,10 +78,10 @@ export default function WorkbooksDashboard() {
       <main className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 z-10">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
           <div>
-            <h2 className="text-3xl font-outfit font-bold text-slate-900 tracking-tight drop-shadow-sm flex items-center">
-              Your CBT Journey
+            <h2 className="text-3xl font-outfit font-bold text-slate-900 tracking-tight drop-shadow-sm flex items-center gap-3">
+              Your Journey <span className="bg-emerald-500 text-white text-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"><Star size={14} fill="currentColor" /> Level 3</span>
             </h2>
-            <p className="text-slate-600 mt-2 font-medium">Reflect, reframe, and grow with structured exercises.</p>
+            <p className="text-slate-600 mt-2 font-medium">Reflect, reframe, and earn rewards as you grow.</p>
           </div>
           <button
             onClick={() => router.push("/workbooks/new")}
@@ -89,6 +89,49 @@ export default function WorkbooksDashboard() {
           >
             <Plus size={20} className="mr-2" /> New Exercise
           </button>
+        </div>
+
+        {/* Gamified Progress Map */}
+        <div className="mb-12 bg-white/60 backdrop-blur-md rounded-3xl p-8 border border-white/60 shadow-sm relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-6 opacity-10">
+            <Trophy size={120} className="text-emerald-500" />
+          </div>
+          <h3 className="text-lg font-bold text-slate-800 mb-6 flex items-center gap-2 relative z-10">
+            <Shield size={20} className="text-emerald-500" /> Cognitive Mastery Map
+          </h3>
+          
+          <div className="relative z-10">
+            <div className="absolute top-1/2 left-0 w-full h-2 bg-emerald-100 rounded-full -translate-y-1/2"></div>
+            <div className="absolute top-1/2 left-0 w-[60%] h-2 bg-gradient-to-r from-emerald-400 to-teal-500 rounded-full -translate-y-1/2 shadow-[0_0_10px_rgba(52,211,153,0.5)]"></div>
+            
+            <div className="flex justify-between relative">
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-lg border-4 border-white z-10">
+                  <Star size={20} fill="currentColor" />
+                </div>
+                <span className="mt-3 font-bold text-slate-700 text-sm">Initiation</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-lg border-4 border-white z-10">
+                  <BookOpen size={20} fill="currentColor" />
+                </div>
+                <span className="mt-3 font-bold text-slate-700 text-sm">Awareness</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-teal-500 flex items-center justify-center text-white shadow-[0_0_15px_rgba(20,184,166,0.6)] border-4 border-white z-10 scale-110">
+                  <Shield size={24} fill="currentColor" />
+                </div>
+                <span className="mt-3 font-bold text-teal-700 text-sm drop-shadow-sm">Current Node</span>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="w-12 h-12 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-300 shadow-sm border-4 border-white z-10">
+                  <Trophy size={20} />
+                </div>
+                <span className="mt-3 font-bold text-slate-400 text-sm">Resilience</span>
+              </div>
+            </div>
+          </div>
+          <p className="text-sm text-slate-500 mt-6 text-center font-medium">Complete 2 more exercises to unlock the Resilience module!</p>
         </div>
 
         {loading ? (

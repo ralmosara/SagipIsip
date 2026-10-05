@@ -24,6 +24,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
+  agreedToTerms Boolean  @default(false)
+  consentDate   DateTime?
 
   chats            ChatHistory[]
   moods            MoodLog[]
@@ -149,3 +151,21 @@ model DocumentChunk {
   createdAt DateTime @default(now())
 }
 
+
+// 6. Admin & System Management
+model AuditLog {
+  id        String   @id @default(uuid())
+  actorId   String   // The ID of the user (Admin/Therapist) or "SYSTEM"
+  action    String   // e.g., "TRIGGER_INGESTION", "UPDATE_ROLE"
+  resource  String   // e.g., "VectorDB", "User(usr_123)"
+  status    String   // "SUCCESS", "FAILED"
+  createdAt DateTime @default(now())
+}
+
+model SystemSetting {
+  id          String   @id @default(uuid())
+  key         String   @unique // e.g., "OLLAMA_HOST", "REQUIRE_2FA"
+  value       String   // JSON or string
+  description String?
+  updatedAt   DateTime @updatedAt
+}
