@@ -29,7 +29,7 @@ export default function WebXRSafeSpace() {
               >
                 Enter Immersive Environment
               </button>
-              <Link href="/calm" className="block text-slate-500 hover:text-slate-300 underline underline-offset-4">
+              <Link href="/calm" className="block text-brand-gray hover:text-slate-300 underline underline-offset-4">
                 Return to 2D Calm Space
               </Link>
             </div>

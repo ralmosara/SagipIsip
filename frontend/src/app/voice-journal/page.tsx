@@ -150,7 +150,7 @@ export default function VoiceJournalPage() {
             <h1 className="text-4xl font-bold tracking-tight text-white mb-2">Voice Journal</h1>
             <p className="text-slate-400">Speak your thoughts aloud. We'll transcribe and secure them.</p>
           </div>
-          <Link href="/" className="text-slate-500 hover:text-white transition-colors">
+          <Link href="/" className="text-brand-gray hover:text-white transition-colors">
             Back
           </Link>
         </div>
@@ -159,7 +159,7 @@ export default function VoiceJournalPage() {
           
           <div className="flex-1 text-xl leading-relaxed text-slate-300 whitespace-pre-wrap font-light z-10">
             {transcript || (!isRecording && "Tap the microphone and start speaking...")}
-            <span className="text-slate-500 italic">{interimTranscript}</span>
+            <span className="text-brand-gray italic">{interimTranscript}</span>
           </div>
 
           {/* Prosody Analysis HUD */}
@@ -212,7 +212,7 @@ export default function VoiceJournalPage() {
               className={`relative flex items-center justify-center w-20 h-20 rounded-full shadow-2xl transition-all duration-300 ${
                 isRecording 
                   ? 'bg-rose-500/20 text-rose-500 border border-rose-500/50 hover:bg-rose-500/30' 
-                  : 'bg-indigo-600 text-white hover:bg-indigo-500 hover:scale-105'
+                  : 'bg-brand-red text-white hover:bg-indigo-500 hover:scale-105'
               }`}
             >
               {isRecording && (

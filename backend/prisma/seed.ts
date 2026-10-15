@@ -313,6 +313,12 @@ async function main() {
     ],
   });
 
+  const chunkCount: any[] = await prisma.$queryRawUnsafe(
+    `SELECT COUNT(*) as count FROM "DocumentChunk"`
+  );
+  const totalChunks = Number(chunkCount[0]?.count || 0);
+  console.log(`📚 RAG Knowledge Base: ${totalChunks} vector chunks available in DocumentChunk.`);
+
   console.log('✅ Seed completed: Users, CBT/DBT/Attachment Modules, Exercises, Achievements.');
   console.log('   Modules seeded: Cognitive Restructuring, Behavioral Activation, TIPP, PLEASE, Attachment, Mindfulness.');
 }

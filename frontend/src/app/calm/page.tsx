@@ -40,7 +40,7 @@ export default function CalmSpacePage() {
           <div className="flex flex-col space-y-4 pt-8">
             <button 
               onClick={() => setPhase('breathing')}
-              className="bg-indigo-600/20 hover:bg-indigo-600/40 text-indigo-200 border border-indigo-500/30 rounded-xl px-6 py-4 text-lg font-medium transition-all"
+              className="bg-brand-red/20 hover:bg-brand-red/40 text-brand-light border border-indigo-500/30 rounded-xl px-6 py-4 text-lg font-medium transition-all"
             >
               Box Breathing
             </button>
@@ -51,7 +51,7 @@ export default function CalmSpacePage() {
               5-4-3-2-1 Grounding
             </button>
             
-            <Link href="/" className="text-slate-500 hover:text-slate-300 pt-4 underline underline-offset-4">
+            <Link href="/" className="text-brand-gray hover:text-slate-300 pt-4 underline underline-offset-4">
               Return Home
             </Link>
           </div>
@@ -83,7 +83,7 @@ export default function CalmSpacePage() {
 
           <button 
             onClick={() => setPhase('intro')}
-            className="mt-12 text-slate-500 hover:text-slate-300 underline underline-offset-4"
+            className="mt-12 text-brand-gray hover:text-slate-300 underline underline-offset-4"
           >
             End Exercise
           </button>
@@ -119,7 +119,7 @@ export default function CalmSpacePage() {
           <div className="text-center pt-8">
             <button 
               onClick={() => setPhase('intro')}
-              className="text-slate-500 hover:text-slate-300 underline underline-offset-4"
+              className="text-brand-gray hover:text-slate-300 underline underline-offset-4"
             >
               End Exercise
             </button>

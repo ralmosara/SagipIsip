@@ -53,7 +53,7 @@ export default function WorkbookDetails({ params }: { params: Promise<{ id: stri
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex justify-center items-center">
+      <div className="min-h-screen bg-brand-light flex justify-center items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
       </div>
     );
@@ -69,12 +69,12 @@ export default function WorkbookDetails({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans pb-12">
+    <div className="min-h-screen bg-brand-light font-sans pb-12">
       <header className="bg-white border-b border-slate-200 p-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <button 
             onClick={() => router.back()}
-            className="flex items-center text-slate-500 hover:text-slate-800 transition-colors font-medium"
+            className="flex items-center text-brand-gray hover:text-slate-800 transition-colors font-medium"
           >
             <ArrowLeft size={20} className="mr-2" /> Back to Dashboard
           </button>
@@ -97,17 +97,17 @@ export default function WorkbookDetails({ params }: { params: Promise<{ id: stri
         {parsedContent.situation ? (
           <div className="space-y-6">
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">1. The Situation</h2>
+              <h2 className="text-sm font-bold text-brand-gray uppercase tracking-wider mb-3">1. The Situation</h2>
               <p className="text-slate-800 whitespace-pre-wrap">{parsedContent.situation}</p>
             </div>
             
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100">
-              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">2. Emotions</h2>
+              <h2 className="text-sm font-bold text-brand-gray uppercase tracking-wider mb-3">2. Emotions</h2>
               <p className="text-slate-800 whitespace-pre-wrap">{parsedContent.emotions}</p>
             </div>
 
             <div className="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 border-l-4 border-l-orange-400">
-              <h2 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-3">3. Automatic Thoughts</h2>
+              <h2 className="text-sm font-bold text-brand-gray uppercase tracking-wider mb-3">3. Automatic Thoughts</h2>
               <p className="text-slate-800 whitespace-pre-wrap italic">"{parsedContent.thoughts}"</p>
             </div>
 

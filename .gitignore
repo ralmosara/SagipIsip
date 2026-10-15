@@ -44,3 +44,8 @@ redisdata/
 
 # Test coverage
 coverage/
+
+# Database & vector dumps (exceed 100MB limit; use restore_vectors.bat or npm run restore:vectors)
+sagipisip_vectors.sql
+sagipisip_vectors.json
+*.dump

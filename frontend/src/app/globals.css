@@ -1,43 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Source+Sans+3:wght@300;400;500;600;700;800&display=swap');
 @import "tailwindcss";
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@300;400;500;600;700&display=swap');
 
 :root {
-  /* Pfizer Brand Colors */
-  --pfizer-blue: #0000FF; /* Iconic electric blue */
-  --pfizer-navy: #041E42;
-  --pfizer-cyan: #00CCFF;
-  --pfizer-teal: #009384;
-  --background: #F8F9FA;
-  --foreground: #041E42;
+  /* Stanford Healthcare Brand Colors */
+  --stanford-red: #8C1515;
+  --stanford-dark-red: #820000;
+  --stanford-black: #2E2D29;
+  --stanford-gray: #4D4F53;
+  --stanford-light-gray: #F4F4F4;
+  --stanford-white: #FFFFFF;
+  
+  --background: #FAFAFA;
+  --foreground: #2E2D29;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: 'Noto Sans', system-ui, -apple-system, sans-serif;
+  --font-sans: 'Source Sans 3', system-ui, -apple-system, sans-serif;
   
   /* Custom colors for tailwind */
-  --color-brand-blue: #001CD6;
-  --color-brand-cyan: #00CCFF;
-  --color-brand-navy: #041E42;
+  --color-brand-red: #8C1515;
+  --color-brand-dark: #2E2D29;
+  --color-brand-gray: #4D4F53;
+  --color-brand-light: #F4F4F4;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #041E42;
-    --foreground: #F8F9FA;
+    --background: #2E2D29;
+    --foreground: #FAFAFA;
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: 'Noto Sans', system-ui, -apple-system, sans-serif;
+  font-family: 'Source Sans 3', system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
 
-/* Clinical / Scientific scrollbar */
+/* Medical / Scientific scrollbar */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -53,14 +57,14 @@ body {
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background-color: #001CD6;
+  background-color: var(--stanford-red);
 }
 
 .custom-scrollbar::-webkit-scrollbar {
   width: 4px;
 }
 
-/* Pfizer-esque gradient utility */
-.bg-pfizer-gradient {
-  background: linear-gradient(135deg, #001CD6 0%, #00CCFF 100%);
+/* Stanford-esque gradient utility */
+.bg-stanford-accent {
+  background: linear-gradient(135deg, #8C1515 0%, #820000 100%);
 }
