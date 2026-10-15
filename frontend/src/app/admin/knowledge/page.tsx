@@ -7,11 +7,11 @@ export default function AdminKnowledgePage() {
     <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight text-slate-900">Knowledge Base (RAG)</h1>
-          <p className="text-sm text-slate-500 mt-1">Manage AI context from clinical PDFs and EPUBs.</p>
+          <h1 className="text-2xl font-bold tracking-tight text-brand-dark">Knowledge Base (RAG)</h1>
+          <p className="text-sm text-brand-gray mt-1">Manage AI context from clinical PDFs and EPUBs.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-slate-300 bg-white hover:bg-slate-50 text-slate-700 h-10 px-4 py-2">
+          <button className="inline-flex items-center justify-center rounded-md text-sm font-medium border border-slate-300 bg-white hover:bg-brand-light text-brand-gray h-10 px-4 py-2">
             <RefreshCw className="mr-2 h-4 w-4" />
             Re-sync Vector DB
           </button>
@@ -38,8 +38,8 @@ export default function AdminKnowledgePage() {
           <div className="bg-blue-50 p-4 rounded-full mb-4">
             <Database className="h-8 w-8 text-blue-600" />
           </div>
-          <h3 className="text-lg font-semibold text-slate-900">Knowledge Base Active</h3>
-          <p className="text-sm text-slate-500 mt-1 max-w-sm">
+          <h3 className="text-lg font-semibold text-brand-dark">Knowledge Base Active</h3>
+          <p className="text-sm text-brand-gray mt-1 max-w-sm">
             22 books are currently indexed in the vector database. Upload new clinical literature to expand Isip's knowledge.
           </p>
         </div>

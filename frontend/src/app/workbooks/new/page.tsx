@@ -54,12 +54,12 @@ export default function NewWorkbook() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans pb-12">
+    <div className="min-h-screen bg-brand-light font-sans pb-12">
       <header className="bg-white border-b border-slate-200 p-4 sticky top-0 z-10">
         <div className="max-w-4xl mx-auto flex items-center justify-between">
           <button 
             onClick={() => router.back()}
-            className="flex items-center text-slate-500 hover:text-slate-800 transition-colors font-medium"
+            className="flex items-center text-brand-gray hover:text-slate-800 transition-colors font-medium"
           >
             <ArrowLeft size={20} className="mr-2" /> Cancel
           </button>
@@ -81,7 +81,7 @@ export default function NewWorkbook() {
           
           <form onSubmit={handleSubmit} className="p-8 space-y-8">
             <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
+              <label className="block text-sm font-semibold text-brand-gray mb-2">
                 Exercise Title (Optional)
               </label>
               <input
@@ -89,17 +89,17 @@ export default function NewWorkbook() {
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="e.g., Anxiety before presentation"
-                className="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none"
+                className="w-full px-4 py-3 bg-brand-light border border-slate-200 rounded-xl focus:bg-white focus:ring-2 focus:ring-teal-500 focus:border-teal-500 transition-all outline-none"
               />
             </div>
 
             <div className="space-y-6">
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+              <div className="bg-brand-light p-6 rounded-2xl border border-slate-100">
                 <label className="flex items-center text-md font-bold text-slate-800 mb-3">
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs mr-3">1</span>
                   The Situation
                 </label>
-                <p className="text-sm text-slate-500 mb-3">What happened? Who were you with? Where were you?</p>
+                <p className="text-sm text-brand-gray mb-3">What happened? Who were you with? Where were you?</p>
                 <textarea
                   required
                   value={situation}
@@ -110,12 +110,12 @@ export default function NewWorkbook() {
                 />
               </div>
 
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+              <div className="bg-brand-light p-6 rounded-2xl border border-slate-100">
                 <label className="flex items-center text-md font-bold text-slate-800 mb-3">
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs mr-3">2</span>
                   Emotions & Feelings
                 </label>
-                <p className="text-sm text-slate-500 mb-3">How did you feel? (e.g., Anxious, Sad, Angry)</p>
+                <p className="text-sm text-brand-gray mb-3">How did you feel? (e.g., Anxious, Sad, Angry)</p>
                 <input
                   required
                   type="text"
@@ -126,12 +126,12 @@ export default function NewWorkbook() {
                 />
               </div>
 
-              <div className="bg-slate-50 p-6 rounded-2xl border border-slate-100">
+              <div className="bg-brand-light p-6 rounded-2xl border border-slate-100">
                 <label className="flex items-center text-md font-bold text-slate-800 mb-3">
                   <span className="flex items-center justify-center w-6 h-6 rounded-full bg-teal-100 text-teal-700 text-xs mr-3">3</span>
                   Automatic Thoughts
                 </label>
-                <p className="text-sm text-slate-500 mb-3">What went through your mind? What were you telling yourself?</p>
+                <p className="text-sm text-brand-gray mb-3">What went through your mind? What were you telling yourself?</p>
                 <textarea
                   required
                   value={thoughts}

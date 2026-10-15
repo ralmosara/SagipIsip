@@ -84,7 +84,7 @@ export default function AuthPage() {
             </p>
           </div>
         </div>
-        <div className="text-slate-500 text-sm">
+        <div className="text-brand-gray text-sm">
           &copy; {new Date().getFullYear()} SagipIsip Systems. All rights reserved.
         </div>
       </div>
@@ -93,17 +93,17 @@ export default function AuthPage() {
       <div className="flex-1 flex flex-col justify-center px-4 sm:px-6 lg:px-20 xl:px-24">
         <div className="mx-auto w-full max-w-sm lg:max-w-md">
           
-          <div className="lg:hidden flex items-center gap-3 text-slate-900 mb-8">
+          <div className="lg:hidden flex items-center gap-3 text-brand-dark mb-8">
             <div className="bg-blue-600 p-2 rounded">
               <Shield className="w-5 h-5 text-white" />
             </div>
             <span className="text-lg font-bold tracking-tight">SagipIsip</span>
           </div>
 
-          <h2 className="text-2xl font-semibold text-slate-900 tracking-tight">
+          <h2 className="text-2xl font-semibold text-brand-dark tracking-tight">
             {isLogin ? "Sign in to your account" : "Create an account"}
           </h2>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-brand-gray">
             {isLogin ? "Enter your credentials to access the console." : "Register for clinical or administrative access."}
           </p>
 
@@ -111,7 +111,7 @@ export default function AuthPage() {
             <form className="space-y-5" onSubmit={handleSubmit}>
               {!isLogin && (
                 <div>
-                  <label className="block text-sm font-medium text-slate-700">Full Name</label>
+                  <label className="block text-sm font-medium text-brand-gray">Full Name</label>
                   <div className="mt-1 relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <UserIcon className="h-4 w-4 text-slate-400" />
@@ -129,7 +129,7 @@ export default function AuthPage() {
               )}
 
               <div>
-                <label className="block text-sm font-medium text-slate-700">Email Address</label>
+                <label className="block text-sm font-medium text-brand-gray">Email Address</label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Mail className="h-4 w-4 text-slate-400" />
@@ -146,7 +146,7 @@ export default function AuthPage() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-slate-700">Password</label>
+                <label className="block text-sm font-medium text-brand-gray">Password</label>
                 <div className="mt-1 relative">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     <Lock className="h-4 w-4 text-slate-400" />
@@ -185,7 +185,7 @@ export default function AuthPage() {
                   <div className="w-full border-t border-slate-200" />
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-slate-500">
+                  <span className="px-2 bg-white text-brand-gray">
                     {isLogin ? "New user?" : "Already have an account?"}
                   </span>
                 </div>
@@ -197,7 +197,7 @@ export default function AuthPage() {
                     setIsLogin(!isLogin);
                     setError("");
                   }}
-                  className="w-full flex justify-center py-2 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-slate-700 bg-white hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
+                  className="w-full flex justify-center py-2 px-4 border border-slate-300 rounded-md shadow-sm text-sm font-medium text-brand-gray bg-white hover:bg-brand-light focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors"
                 >
                   {isLogin ? "Request access" : "Sign in instead"}
                 </button>

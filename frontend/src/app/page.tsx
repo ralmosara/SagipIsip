@@ -136,13 +136,13 @@ export default function PatientDashboard() {
     ? <TrendingUp size={16} className="text-[#009384]" />
     : moodTrend?.trend === 'declining'
     ? <TrendingDown size={16} className="text-[#D32F2F]" />
-    : <Minus size={16} className="text-[#64748B]" />;
+    : <Minus size={16} className="text-[#4D4F53]" />;
 
   const trendColor = moodTrend?.trend === 'improving'
     ? 'text-[#009384] bg-[#E0F2F1] border-[#B2DFDB]'
     : moodTrend?.trend === 'declining'
     ? 'text-[#D32F2F] bg-[#FFEBEE] border-[#FFCDD2]'
-    : 'text-[#475569] bg-[#F1F5F9] border-[#E2E8F0]';
+    : 'text-[#4D4F53] bg-[#F1F5F9] border-[#E2E8F0]';
 
   const trendLabel = moodTrend?.trend === 'improving' ? 'Positive Trajectory'
     : moodTrend?.trend === 'declining' ? 'Intervention Recommended'
@@ -150,23 +150,23 @@ export default function PatientDashboard() {
     : 'Data Collection Phase';
 
   return (
-    <div className="min-h-screen bg-[#F4F6F8] font-sans text-[#041E42] selection:bg-[#00CCFF] selection:text-[#041E42]">
+    <div className="min-h-screen bg-[#FAFAFA] font-sans text-[#2E2D29] selection:bg-[#820000] selection:text-[#2E2D29]">
       {/* Clinical Top Navigation */}
-      <header className="sticky top-0 z-50 bg-white border-b border-[#E2E8F0] shadow-[0_2px_10px_rgba(4,30,66,0.03)]">
+      <header className="sticky top-0 z-50 bg-white border-b border-[#E2E8F0] shadow-[0_2px_10px_rgba(46,45,41,0.03)]">
         <div className="max-w-7xl mx-auto px-6 h-[72px] flex items-center justify-between">
           <div className="flex items-center gap-4">
-            <button className="p-2 -ml-2 rounded-md text-[#64748B] hover:bg-[#F1F5F9] transition-colors md:hidden">
+            <button className="p-2 -ml-2 rounded-md text-[#4D4F53] hover:bg-[#F1F5F9] transition-colors md:hidden">
               <Menu size={24} />
             </button>
             <div className="flex items-center gap-3">
-              <div className="bg-pfizer-gradient p-2 rounded text-white shadow-md">
+              <div className="bg-stanford-accent p-2 rounded text-white shadow-md">
                 <Stethoscope size={24} strokeWidth={2} />
               </div>
               <div className="hidden sm:block">
-                <span className="text-[1.25rem] font-bold tracking-tight text-[#041E42] leading-none block">
+                <span className="text-[1.25rem] font-bold tracking-tight text-[#2E2D29] leading-none block">
                   SagipIsip
                 </span>
-                <span className="text-[0.65rem] uppercase tracking-widest text-[#001CD6] font-bold block mt-0.5">
+                <span className="text-[0.65rem] uppercase tracking-widest text-[#8C1515] font-bold block mt-0.5">
                   Patient Portal
                 </span>
               </div>
@@ -174,10 +174,10 @@ export default function PatientDashboard() {
           </div>
           <div className="flex items-center gap-4 sm:gap-6">
             <div className="hidden sm:flex flex-col items-end mr-2">
-              <span className="text-[13px] font-bold text-[#041E42] leading-none">Patient ID: {userName}</span>
-              <span className="text-[11px] text-[#64748B] mt-1">Authenticated Session</span>
+              <span className="text-[13px] font-bold text-[#2E2D29] leading-none">Patient ID: {userName}</span>
+              <span className="text-[11px] text-[#4D4F53] mt-1">Authenticated Session</span>
             </div>
-            <div className="h-10 w-10 rounded border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#001CD6] text-sm font-bold shadow-sm">
+            <div className="h-10 w-10 rounded border border-[#E2E8F0] bg-[#F8FAFC] flex items-center justify-center text-[#8C1515] text-sm font-bold shadow-sm">
               {userName.charAt(0).toUpperCase()}
             </div>
           </div>
@@ -188,15 +188,15 @@ export default function PatientDashboard() {
         {/* Header Section */}
         <div className="mb-10 flex flex-col md:flex-row justify-between items-start md:items-end gap-6 animate-in fade-in duration-700">
           <div>
-            <h1 className="text-[2rem] font-bold text-[#041E42] tracking-tight mb-2">Clinical Dashboard</h1>
-            <p className="text-[15px] text-[#475569]">Comprehensive overview of behavioral and emotional telemetry.</p>
+            <h1 className="text-[2rem] font-bold text-[#2E2D29] tracking-tight mb-2">Clinical Dashboard</h1>
+            <p className="text-[15px] text-[#4D4F53]">Comprehensive overview of behavioral and emotional telemetry.</p>
           </div>
           <div className="flex flex-wrap gap-3">
             <div className={`flex items-center gap-2 px-4 py-2 rounded border text-[13px] font-bold uppercase tracking-wider ${trendColor}`}>
               {trendIcon} {trendLabel}
             </div>
-            <div className="flex items-center gap-2 bg-white border border-[#E2E8F0] text-[#041E42] px-4 py-2 rounded text-[13px] font-bold uppercase tracking-wider shadow-sm">
-              <span className="text-[#001CD6]">{moodTrend?.recentLogs?.length ?? 0}</span> Data Points
+            <div className="flex items-center gap-2 bg-white border border-[#E2E8F0] text-[#2E2D29] px-4 py-2 rounded text-[13px] font-bold uppercase tracking-wider shadow-sm">
+              <span className="text-[#8C1515]">{moodTrend?.recentLogs?.length ?? 0}</span> Data Points
             </div>
           </div>
         </div>
@@ -207,7 +207,7 @@ export default function PatientDashboard() {
             <AlertCircle size={24} className="text-[#D32F2F] shrink-0 mt-0.5" />
             <div className="flex-1">
               <h3 className="text-base font-bold text-[#D32F2F] uppercase tracking-wide">Clinical Alert: Intervention Recommended</h3>
-              <p className="text-[15px] text-[#475569] mt-2 mb-4 leading-relaxed">{moodTrend.anomalyDescription}</p>
+              <p className="text-[15px] text-[#4D4F53] mt-2 mb-4 leading-relaxed">{moodTrend.anomalyDescription}</p>
               <Link href="/chat" className="inline-flex items-center text-[13px] font-bold text-white bg-[#D32F2F] hover:bg-[#B71C1C] px-5 py-2.5 rounded transition-colors shadow-sm">
                 Initiate AI Assessment <ArrowRight size={16} className="ml-2" />
               </Link>
@@ -219,37 +219,37 @@ export default function PatientDashboard() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
           
           {/* AI Assessment Card */}
-          <Link href="/chat" className="group flex flex-col h-full bg-white rounded border border-[#E2E8F0] p-8 hover:border-[#001CD6] hover:shadow-[0_8px_30px_rgba(0,28,214,0.08)] transition-all duration-300 relative overflow-hidden">
-            <div className="absolute top-0 left-0 w-full h-1 bg-[#001CD6] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+          <Link href="/chat" className="group flex flex-col h-full bg-white rounded border border-[#E2E8F0] p-8 hover:border-[#8C1515] hover:shadow-[0_8px_30px_rgba(140,21,21,0.08)] transition-all duration-300 relative overflow-hidden">
+            <div className="absolute top-0 left-0 w-full h-1 bg-[#8C1515] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
             <div className="flex items-center justify-between mb-6">
-              <div className="w-14 h-14 rounded bg-[#F0F4FA] flex items-center justify-center text-[#001CD6]">
+              <div className="w-14 h-14 rounded bg-[#F0F4FA] flex items-center justify-center text-[#8C1515]">
                 <MessageSquare size={28} strokeWidth={1.5} />
               </div>
-              <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#001CD6] transition-colors transform group-hover:translate-x-1" />
+              <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#8C1515] transition-colors transform group-hover:translate-x-1" />
             </div>
-            <h3 className="text-xl font-bold text-[#041E42] mb-3">AI Diagnostic Interface</h3>
-            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed">
+            <h3 className="text-xl font-bold text-[#2E2D29] mb-3">AI Diagnostic Interface</h3>
+            <p className="text-[#4D4F53] text-[15px] flex-1 leading-relaxed">
               Engage with the clinical AI agent for therapeutic dialogue based on CBT & DBT modalities.
             </p>
           </Link>
 
           {/* Workbooks Card */}
-          <Link href="/workbooks" className="group flex flex-col h-full bg-white rounded border border-[#E2E8F0] p-8 hover:border-[#00CCFF] hover:shadow-[0_8px_30px_rgba(0,204,255,0.08)] transition-all duration-300 relative overflow-hidden">
-             <div className="absolute top-0 left-0 w-full h-1 bg-[#00CCFF] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
+          <Link href="/workbooks" className="group flex flex-col h-full bg-white rounded border border-[#E2E8F0] p-8 hover:border-[#820000] hover:shadow-[0_8px_30px_rgba(0,204,255,0.08)] transition-all duration-300 relative overflow-hidden">
+             <div className="absolute top-0 left-0 w-full h-1 bg-[#820000] transform origin-left scale-x-0 group-hover:scale-x-100 transition-transform duration-300"></div>
             <div className="flex items-center justify-between mb-6">
               <div className="w-14 h-14 rounded bg-[#E0F7FA] flex items-center justify-center text-[#00B8D4]">
                 <BookOpen size={28} strokeWidth={1.5} />
               </div>
                <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#00B8D4] transition-colors transform group-hover:translate-x-1" />
             </div>
-            <h3 className="text-xl font-bold text-[#041E42] mb-3">Clinical Protocols</h3>
-            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed mb-6">
+            <h3 className="text-xl font-bold text-[#2E2D29] mb-3">Clinical Protocols</h3>
+            <p className="text-[#4D4F53] text-[15px] flex-1 leading-relaxed mb-6">
               Access structured behavioral modules including Cognitive Restructuring and Behavioral Activation.
             </p>
             {recentWorkbooks.length > 0 && (
               <div className="mt-auto border-t border-[#E2E8F0] pt-4">
                 <span className="text-[11px] font-bold text-[#94A3B8] uppercase tracking-wider block mb-1">Active Protocol</span>
-                <span className="text-[13px] font-bold text-[#041E42] truncate block">
+                <span className="text-[13px] font-bold text-[#2E2D29] truncate block">
                   {recentWorkbooks[0]?.title}
                 </span>
               </div>
@@ -265,14 +265,14 @@ export default function PatientDashboard() {
               </div>
                <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#009384] transition-colors transform group-hover:translate-x-1" />
             </div>
-            <h3 className="text-xl font-bold text-[#041E42] mb-3">Telemetry & Logs</h3>
-            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed mb-6">
+            <h3 className="text-xl font-bold text-[#2E2D29] mb-3">Telemetry & Logs</h3>
+            <p className="text-[#4D4F53] text-[15px] flex-1 leading-relaxed mb-6">
               {moodTrend?.sevenDayAverage
                 ? `7-Day Moving Avg: ${moodTrend.sevenDayAverage}/5. Input daily biometrics to ensure accurate analytical models.`
                 : 'Input daily behavioral data to establish baseline telemetry for predictive modeling.'}
             </p>
             <div className="mt-auto">
-              <span className="inline-flex items-center justify-center text-[13px] font-bold text-white bg-[#041E42] hover:bg-[#001CD6] px-5 py-2.5 rounded transition-colors w-full uppercase tracking-wide">
+              <span className="inline-flex items-center justify-center text-[13px] font-bold text-white bg-[#2E2D29] hover:bg-[#8C1515] px-5 py-2.5 rounded transition-colors w-full uppercase tracking-wide">
                 Log New Data Point
               </span>
             </div>
@@ -287,8 +287,8 @@ export default function PatientDashboard() {
               </div>
               <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#9C27B0] transition-colors transform group-hover:translate-x-1" />
             </div>
-            <h3 className="text-xl font-bold text-[#041E42] mb-3">Voice Journal</h3>
-            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed mb-6">
+            <h3 className="text-xl font-bold text-[#2E2D29] mb-3">Voice Journal</h3>
+            <p className="text-[#4D4F53] text-[15px] flex-1 leading-relaxed mb-6">
               Express your thoughts naturally through speech with AI cognitive analysis.
             </p>
           </Link>
@@ -302,8 +302,8 @@ export default function PatientDashboard() {
               </div>
               <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#3F51B5] transition-colors transform group-hover:translate-x-1" />
             </div>
-            <h3 className="text-xl font-bold text-[#041E42] mb-3">Calm Space</h3>
-            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed mb-6">
+            <h3 className="text-xl font-bold text-[#2E2D29] mb-3">Calm Space</h3>
+            <p className="text-[#4D4F53] text-[15px] flex-1 leading-relaxed mb-6">
               Immediate access to grounding exercises and distress tolerance techniques.
             </p>
           </Link>
@@ -317,8 +317,8 @@ export default function PatientDashboard() {
               </div>
               <ArrowRight size={20} className="text-[#CBD5E1] group-hover:text-[#FF9800] transition-colors transform group-hover:translate-x-1" />
             </div>
-            <h3 className="text-xl font-bold text-[#041E42] mb-3">Biopsychosocial Insights</h3>
-            <p className="text-[#64748B] text-[15px] flex-1 leading-relaxed mb-6">
+            <h3 className="text-xl font-bold text-[#2E2D29] mb-3">Biopsychosocial Insights</h3>
+            <p className="text-[#4D4F53] text-[15px] flex-1 leading-relaxed mb-6">
               Discover correlations between your daily habits and longitudinal mood trends.
             </p>
           </Link>
@@ -328,16 +328,16 @@ export default function PatientDashboard() {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in slide-in-from-bottom-5 duration-700 delay-100">
           
           {/* Scientific Chart Card */}
-          <div className="lg:col-span-2 bg-white rounded border border-[#E2E8F0] p-8 shadow-[0_2px_12px_rgba(4,30,66,0.03)] flex flex-col">
+          <div className="lg:col-span-2 bg-white rounded border border-[#E2E8F0] p-8 shadow-[0_2px_12px_rgba(46,45,41,0.03)] flex flex-col">
             <div className="flex justify-between items-start mb-8">
               <div>
-                <h2 className="text-lg font-bold text-[#041E42] uppercase tracking-wide flex items-center gap-2">
-                  <Activity size={18} className="text-[#001CD6]" /> Longitudinal Efficacy
+                <h2 className="text-lg font-bold text-[#2E2D29] uppercase tracking-wide flex items-center gap-2">
+                  <Activity size={18} className="text-[#8C1515]" /> Longitudinal Efficacy
                 </h2>
-                <p className="text-[13px] text-[#64748B] mt-1 font-medium">Self-reported mood index (trailing 7 days)</p>
+                <p className="text-[13px] text-[#4D4F53] mt-1 font-medium">Self-reported mood index (trailing 7 days)</p>
               </div>
               {moodTrend?.thirtyDayAverage && (
-                <div className="border border-[#CBD5E1] px-4 py-2 rounded text-[12px] font-bold text-[#041E42] bg-[#F8FAFC]">
+                <div className="border border-[#CBD5E1] px-4 py-2 rounded text-[12px] font-bold text-[#2E2D29] bg-[#F8FAFC]">
                   30D Baseline: {moodTrend.thirtyDayAverage}/5
                 </div>
               )}
@@ -346,38 +346,38 @@ export default function PatientDashboard() {
             <div className="h-[320px] w-full flex-1">
               {isLoading ? (
                 <div className="flex items-center justify-center h-full">
-                  <div className="w-8 h-8 border-2 border-[#001CD6] border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-8 h-8 border-2 border-[#8C1515] border-t-transparent rounded-full animate-spin"></div>
                 </div>
               ) : chartData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                     <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#F1F5F9" />
-                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#64748B', fontSize: 12, fontWeight: 600}} dy={15} />
-                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748B', fontSize: 12, fontWeight: 600}} domain={[1, 5]} ticks={[1,2,3,4,5]} />
+                    <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{fill: '#4D4F53', fontSize: 12, fontWeight: 600}} dy={15} />
+                    <YAxis axisLine={false} tickLine={false} tick={{fill: '#4D4F53', fontSize: 12, fontWeight: 600}} domain={[1, 5]} ticks={[1,2,3,4,5]} />
                     {moodTrend?.sevenDayAverage && (
-                      <ReferenceLine y={moodTrend.sevenDayAverage} stroke="#00CCFF" strokeDasharray="3 3" strokeOpacity={0.8} />
+                      <ReferenceLine y={moodTrend.sevenDayAverage} stroke="#820000" strokeDasharray="3 3" strokeOpacity={0.8} />
                     )}
                     <Tooltip 
-                      contentStyle={{ borderRadius: '4px', border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF', color: '#041E42', boxShadow: '0 4px 20px rgba(4,30,66,0.1)', fontSize: '13px', padding: '12px 16px', fontWeight: 'bold' }}
-                      itemStyle={{ color: '#001CD6' }}
+                      contentStyle={{ borderRadius: '4px', border: '1px solid #E2E8F0', backgroundColor: '#FFFFFF', color: '#2E2D29', boxShadow: '0 4px 20px rgba(46,45,41,0.1)', fontSize: '13px', padding: '12px 16px', fontWeight: 'bold' }}
+                      itemStyle={{ color: '#8C1515' }}
                       formatter={(value: any) => [`${value}/5 — ${moodLabels[Math.round(value)] ?? ''}`, 'Index']}
-                      labelStyle={{ color: '#64748B', marginBottom: '8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
+                      labelStyle={{ color: '#4D4F53', marginBottom: '8px', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.05em' }}
                     />
                     <Line 
                       type="monotone" 
                       dataKey="mood" 
-                      stroke="#001CD6" 
+                      stroke="#8C1515" 
                       strokeWidth={2.5} 
-                      dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#001CD6' }}
-                      activeDot={{ r: 6, fill: '#001CD6', stroke: '#00CCFF', strokeWidth: 4 }}
+                      dot={{ r: 4, strokeWidth: 2, fill: '#fff', stroke: '#8C1515' }}
+                      activeDot={{ r: 6, fill: '#8C1515', stroke: '#820000', strokeWidth: 4 }}
                       animationDuration={1000}
                     />
                   </LineChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="flex flex-col items-center justify-center h-full text-[#64748B] border-2 border-dashed border-[#E2E8F0] rounded bg-[#F8FAFC]">
+                <div className="flex flex-col items-center justify-center h-full text-[#4D4F53] border-2 border-dashed border-[#E2E8F0] rounded bg-[#F8FAFC]">
                   <Microscope size={32} className="text-[#CBD5E1] mb-4" />
-                  <p className="font-bold text-[14px] text-[#041E42]">Insufficient Data</p>
+                  <p className="font-bold text-[14px] text-[#2E2D29]">Insufficient Data</p>
                   <p className="text-[13px] mt-1 text-center max-w-xs">Data collection required to generate longitudinal efficacy reports.</p>
                 </div>
               )}
@@ -386,11 +386,11 @@ export default function PatientDashboard() {
 
           {/* Clinical Insight & Activity Sidebar */}
           <div className="flex flex-col gap-6">
-            <div className="bg-[#041E42] rounded p-8 border border-[#041E42] shadow-[0_4px_24px_rgba(4,30,66,0.15)] relative overflow-hidden">
+            <div className="bg-[#2E2D29] rounded p-8 border border-[#2E2D29] shadow-[0_4px_24px_rgba(46,45,41,0.15)] relative overflow-hidden">
               <div className="absolute -top-10 -right-10 opacity-10">
-                <Microscope size={140} className="text-[#00CCFF]" />
+                <Microscope size={140} className="text-[#820000]" />
               </div>
-              <h3 className="text-[15px] font-bold text-[#00CCFF] uppercase tracking-widest flex items-center gap-2 mb-4 relative z-10">
+              <h3 className="text-[15px] font-bold text-[#820000] uppercase tracking-widest flex items-center gap-2 mb-4 relative z-10">
                 <Sparkles size={16} /> Synthesis Report
               </h3>
               <p className="text-[15px] text-white leading-relaxed relative z-10 font-medium">
@@ -399,34 +399,34 @@ export default function PatientDashboard() {
             </div>
 
             {/* Quick Stats / Recent Activity */}
-            <div className="bg-white rounded border border-[#E2E8F0] p-8 shadow-[0_2px_12px_rgba(4,30,66,0.03)] flex-1">
-              <h3 className="text-[12px] font-bold text-[#64748B] uppercase tracking-[0.1em] mb-6">Recent Protocol Activity</h3>
+            <div className="bg-white rounded border border-[#E2E8F0] p-8 shadow-[0_2px_12px_rgba(46,45,41,0.03)] flex-1">
+              <h3 className="text-[12px] font-bold text-[#4D4F53] uppercase tracking-[0.1em] mb-6">Recent Protocol Activity</h3>
               
               {recentWorkbooks.length > 0 ? (
                 <div className="space-y-5">
                   {recentWorkbooks.map((wb, i) => (
                     <div key={wb.id} className="flex gap-4 group cursor-pointer" onClick={() => router.push(`/workbooks/${wb.id}`)}>
-                      <div className="mt-0.5 w-2 h-2 rounded-full bg-[#001CD6] group-hover:scale-150 group-hover:bg-[#00CCFF] transition-all"></div>
+                      <div className="mt-0.5 w-2 h-2 rounded-full bg-[#8C1515] group-hover:scale-150 group-hover:bg-[#820000] transition-all"></div>
                       <div>
-                        <p className="text-[14px] font-bold text-[#041E42] leading-snug group-hover:text-[#001CD6] transition-colors">{wb.title}</p>
-                        <p className="text-[12px] text-[#64748B] mt-1 font-medium">{new Date(wb.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
+                        <p className="text-[14px] font-bold text-[#2E2D29] leading-snug group-hover:text-[#8C1515] transition-colors">{wb.title}</p>
+                        <p className="text-[12px] text-[#4D4F53] mt-1 font-medium">{new Date(wb.createdAt).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })}</p>
                       </div>
                     </div>
                   ))}
                 </div>
               ) : (
-                <p className="text-[14px] text-[#64748B]">No protocols initiated.</p>
+                <p className="text-[14px] text-[#4D4F53]">No protocols initiated.</p>
               )}
 
               {moodTrend && (
                 <div className="mt-8 pt-6 border-t border-[#E2E8F0] grid grid-cols-2 gap-4">
                   <div>
-                    <p className="text-[2.25rem] font-bold text-[#041E42] leading-none mb-1">{moodTrend.sevenDayAverage ?? '—'}</p>
-                    <p className="text-[11px] text-[#64748B] font-bold uppercase tracking-wider">7D Moving Avg</p>
+                    <p className="text-[2.25rem] font-bold text-[#2E2D29] leading-none mb-1">{moodTrend.sevenDayAverage ?? '—'}</p>
+                    <p className="text-[11px] text-[#4D4F53] font-bold uppercase tracking-wider">7D Moving Avg</p>
                   </div>
                   <div>
-                    <p className="text-[2.25rem] font-bold text-[#001CD6] leading-none mb-1">{moodTrend.recentLogs?.length ?? 0}</p>
-                    <p className="text-[11px] text-[#64748B] font-bold uppercase tracking-wider">Data Points</p>
+                    <p className="text-[2.25rem] font-bold text-[#8C1515] leading-none mb-1">{moodTrend.recentLogs?.length ?? 0}</p>
+                    <p className="text-[11px] text-[#4D4F53] font-bold uppercase tracking-wider">Data Points</p>
                   </div>
                 </div>
               )}

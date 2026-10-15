@@ -29,20 +29,20 @@ export default function SettingsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans p-6 text-slate-800">
+    <div className="min-h-screen bg-brand-light font-sans p-6 text-slate-800">
       <div className="max-w-3xl mx-auto space-y-8">
         
         <header className="flex items-center gap-4 border-b border-slate-200 pb-6 mt-6">
           <Link href="/" className="p-2 hover:bg-slate-200 rounded-full transition-colors">
             <ArrowLeft size={24} className="text-slate-600" />
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight text-slate-900 flex items-center gap-3">
-            <Settings size={28} className="text-indigo-600" /> Account Settings
+          <h1 className="text-3xl font-bold tracking-tight text-brand-dark flex items-center gap-3">
+            <Settings size={28} className="text-brand-red" /> Account Settings
           </h1>
         </header>
 
         <section className="bg-white rounded-2xl border border-slate-200 p-8 shadow-sm">
-          <h2 className="text-xl font-bold text-slate-900 mb-6 flex items-center gap-2">
+          <h2 className="text-xl font-bold text-brand-dark mb-6 flex items-center gap-2">
             <ShieldAlert size={20} className="text-rose-500" /> Data Privacy & Right to Erasure
           </h2>
           
@@ -63,7 +63,7 @@ export default function SettingsPage() {
               </button>
             ) : (
               <div className="bg-white p-4 rounded-lg border border-rose-200 shadow-sm animate-in fade-in zoom-in duration-200">
-                <p className="font-bold text-slate-900 mb-4">Are you absolutely sure?</p>
+                <p className="font-bold text-brand-dark mb-4">Are you absolutely sure?</p>
                 <div className="flex gap-4">
                   <button 
                     onClick={handleDeleteData}
@@ -74,7 +74,7 @@ export default function SettingsPage() {
                   </button>
                   <button 
                     onClick={() => setShowConfirm(false)}
-                    className="bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 px-6 rounded flex-1 transition-colors"
+                    className="bg-slate-100 hover:bg-slate-200 text-brand-gray font-bold py-2 px-6 rounded flex-1 transition-colors"
                   >
                     Cancel
                   </button>

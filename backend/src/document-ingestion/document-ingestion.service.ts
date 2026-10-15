@@ -22,49 +22,63 @@ export class DocumentIngestionService {
   /**
    * Step 1: Ingest all PDFs and EPUBs from the books directory.
    * Parses text, chunks it, generates embeddings via Ollama, stores in DB.
-   *
-   * Previously, 8 of 22 books (.epub files) were entirely skipped, meaning
-   * the RAG system had no access to: Mental Health Workbook (CBT/DBT/Attachment Theory),
-   * AI for Doctors, Helping Children, Biopsychosocial Toolkit, Working with Dissociation,
-   * Integrating AI into Mental Health Care, and Where to Start (Mental Health America).
-   * This fix restores that clinical knowledge to the AI companion.
    */
   async processBooksDirectory() {
-    const booksDir = path.join(process.cwd(), '..', 'books');
+    let booksDir = path.resolve(process.cwd(), '..', 'books');
+    if (!fs.existsSync(booksDir)) {
+      booksDir = path.resolve(process.cwd(), 'books');
+    }
+    if (!fs.existsSync(booksDir)) {
+      booksDir = path.resolve(__dirname, '..', '..', '..', 'books');
+    }
+
     this.logger.log(`Scanning books directory: ${booksDir}`);
 
     if (!fs.existsSync(booksDir)) {
-      this.logger.warn('Books directory not found.');
+      this.logger.warn(`Books directory not found at ${booksDir}`);
       return;
     }
 
     const files = fs.readdirSync(booksDir);
+    this.logger.log(`Found ${files.length} items in books directory.`);
 
     for (const file of files) {
       const filePath = path.join(booksDir, file);
+      if (!file.endsWith('.pdf') && !file.endsWith('.epub')) {
+        continue;
+      }
+
+      // Check if already fully embedded
+      const existingRows: any[] = await this.prisma.$queryRawUnsafe(
+        `SELECT COUNT(*) as total, COUNT(embedding) as embedded FROM "DocumentChunk" WHERE "bookTitle" = $1`,
+        file,
+      );
+      const total = Number(existingRows[0]?.total || 0);
+      const embedded = Number(existingRows[0]?.embedded || 0);
+
+      if (total > 0 && embedded === total && embedded >= 10) {
+        this.logger.log(`Skipping ${file} — already fully embedded (${embedded} chunks).`);
+        continue;
+      }
+
+      if (total > 0) {
+        this.logger.log(`Re-ingesting ${file} — cleaning up incomplete ${total} chunks (${embedded} embedded).`);
+        await this.prisma.$executeRawUnsafe(
+          `DELETE FROM "DocumentChunk" WHERE "bookTitle" = $1`,
+          file,
+        );
+      }
 
       if (file.endsWith('.pdf')) {
-        const existing = await this.prisma.documentChunk.findFirst({
-          where: { bookTitle: file },
-        });
-        if (existing) {
-          this.logger.log(`Skipping ${file} — already ingested.`);
-          continue;
-        }
         await this.ingestPdf(filePath, file);
       } else if (file.endsWith('.epub')) {
-        const existing = await this.prisma.documentChunk.findFirst({
-          where: { bookTitle: file },
-        });
-        if (existing) {
-          this.logger.log(`Skipping EPUB ${file} — already ingested.`);
-          continue;
-        }
         await this.ingestEpub(filePath, file);
       }
     }
 
-    this.logger.log('All books processed.');
+    // Ensure pgvector HNSW index for fast similarity search
+    await this.ensureVectorIndex();
+    this.logger.log('All books processed successfully.');
   }
 
   /**
@@ -72,15 +86,54 @@ export class DocumentIngestionService {
    * Returns a string of context to inject into the AI system prompt.
    */
   async retrieveRelevantContext(query: string, topK = 4): Promise<string> {
+    const { context } = await this.retrieveContextWithSources(query, topK);
+    return context;
+  }
+
+  /**
+   * Retrieves relevant chunks along with the distinct book source titles.
+   */
+  async retrieveContextWithSources(
+    query: string,
+    topK = 4,
+  ): Promise<{
+    context: string;
+    sources: string[];
+    chunks: Array<{ content: string; bookTitle: string; distance: number; similarity: number }>;
+  }> {
+    const chunks = await this.retrieveRelevantChunks(query, topK);
+    if (!chunks || chunks.length === 0) {
+      return { context: '', sources: [], chunks: [] };
+    }
+
+    const uniqueSources = Array.from(new Set(chunks.map((c) => c.bookTitle)));
+    const context = chunks
+      .map(
+        (r, i) =>
+          `[Source ${i + 1}: "${r.bookTitle}" (Relevance: ${(r.similarity * 100).toFixed(1)}%)]\n${r.content}`,
+      )
+      .join('\n\n---\n\n');
+
+    this.logger.log(`RAG: Found ${chunks.length} relevant chunks across ${uniqueSources.length} books for query.`);
+    return { context, sources: uniqueSources, chunks };
+  }
+
+  /**
+   * Low-level vector similarity search using PostgreSQL pgvector <=> cosine distance operator.
+   */
+  async retrieveRelevantChunks(
+    query: string,
+    topK = 4,
+  ): Promise<Array<{ content: string; bookTitle: string; distance: number; similarity: number }>> {
     try {
       const queryEmbedding = await this.generateEmbedding(query);
-      if (!queryEmbedding) return '';
+      if (!queryEmbedding) return [];
 
       const vectorString = `[${queryEmbedding.join(',')}]`;
 
-      const results: Array<{ content: string; bookTitle: string }> =
+      const results: Array<{ content: string; bookTitle: string; distance: number }> =
         await this.prisma.$queryRawUnsafe(
-          `SELECT content, "bookTitle"
+          `SELECT content, "bookTitle", (embedding <=> $1::vector) as distance
            FROM "DocumentChunk"
            WHERE embedding IS NOT NULL
            ORDER BY embedding <=> $1::vector
@@ -89,20 +142,80 @@ export class DocumentIngestionService {
           topK,
         );
 
-      if (!results || results.length === 0) return '';
+      if (!results || results.length === 0) return [];
 
-      const context = results
-        .map(
-          (r, i) =>
-            `[Source ${i + 1}: "${r.bookTitle}"]\n${r.content}`,
-        )
-        .join('\n\n---\n\n');
-
-      this.logger.log(`RAG: Found ${results.length} relevant chunks for query.`);
-      return context;
+      return results.map((r) => ({
+        content: r.content,
+        bookTitle: r.bookTitle,
+        distance: Number(r.distance),
+        similarity: Math.max(0, Math.min(1, 1 - Number(r.distance))),
+      }));
     } catch (err) {
-      this.logger.error('RAG retrieval failed:', err);
-      return '';
+      this.logger.error('RAG chunk retrieval failed:', err);
+      return [];
+    }
+  }
+
+  /**
+   * Direct Clinical Consultation: Answers a clinical or psychological inquiry
+   * grounded strictly in the 22-book vectorized library with cited sources.
+   */
+  async clinicalConsult(
+    query: string,
+    topK = 4,
+  ): Promise<{
+    query: string;
+    answer: string;
+    sources: string[];
+    chunks: Array<{ content: string; bookTitle: string; similarity: number }>;
+  }> {
+    const { context, sources, chunks } = await this.retrieveContextWithSources(query, topK);
+
+    const systemPrompt =
+      `You are a Senior Clinical Consultation AI for SagipIsip. ` +
+      `Your role is to assist therapists, counselors, and patients by providing evidence-based, compassionate psychoeducation and clinical strategies.\n\n` +
+      `You have access to 22 authoritative mental health textbooks (CBT, DBT, Attachment Theory, Dissociation, Youth Mental Health, Behavioral Activation).\n\n` +
+      `Ground your answer in the clinical reference material provided below. When helpful, mention the underlying concepts (e.g., Beck's cognitive model, DBT PLEASE/TIPP skills, attachment styles) and provide actionable, structured guidance.\n\n` +
+      (context
+        ? `## Clinical Reference Material (Retrieved from pgvector):\n${context}\n\n`
+        : `No direct reference material found. Use evidence-based clinical psychology best practices.\n\n`);
+
+    const response = await ollama.chat({
+      model: process.env.OLLAMA_MODEL || 'llama3',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        { role: 'user', content: query },
+      ],
+      options: {
+        temperature: 0.6,
+        top_p: 0.9,
+      },
+    });
+
+    return {
+      query,
+      answer: response.message.content,
+      sources,
+      chunks: chunks.map((c) => ({
+        bookTitle: c.bookTitle,
+        content: c.content,
+        similarity: c.similarity,
+      })),
+    };
+  }
+
+  /**
+   * Create HNSW index on DocumentChunk.embedding if it does not already exist.
+   */
+  async ensureVectorIndex(): Promise<void> {
+    try {
+      await this.prisma.$executeRawUnsafe(
+        `CREATE INDEX IF NOT EXISTS "DocumentChunk_embedding_hnsw_idx" 
+         ON "DocumentChunk" USING hnsw (embedding vector_cosine_ops);`,
+      );
+      this.logger.log('HNSW vector index verified on DocumentChunk.');
+    } catch (err) {
+      this.logger.warn(`Could not create HNSW vector index: ${err}`);
     }
   }
 
@@ -113,8 +226,22 @@ export class DocumentIngestionService {
     const dataBuffer = fs.readFileSync(filePath);
 
     try {
-      const data = await pdfParse(dataBuffer);
-      const text: string = data.text;
+      let text = '';
+      if (pdfParseRaw && pdfParseRaw.PDFParse) {
+        const parser = new pdfParseRaw.PDFParse({ data: dataBuffer });
+        await parser.load();
+        const res = await parser.getText();
+        text = res?.text || '';
+        await parser.destroy();
+      } else if (typeof pdfParse === 'function') {
+        const data = await pdfParse(dataBuffer);
+        text = data?.text || '';
+      }
+
+      if (!text || text.trim().length < 50) {
+        this.logger.warn(`PDF "${title}" produced insufficient text. Skipping.`);
+        return;
+      }
 
       const chunks = this.chunkText(text, 800);
       this.logger.log(`Generated ${chunks.length} chunks for "${title}"`);
@@ -125,18 +252,6 @@ export class DocumentIngestionService {
     }
   }
 
-  /**
-   * Parses EPUB files and extracts plain text for RAG ingestion.
-   * This unlocks the following books previously inaccessible to the AI:
-   * - Mental Health Workbook 7-in-1 (CBT, DBT, Attachment Theory)
-   * - AI for Doctors and Nurse Practitioners
-   * - Helping Children: Principles of Good Practice
-   * - The Biopsychosocial Multiaxial Toolkit
-   * - Working with Dissociation in Clinical Practice
-   * - Integrating AI into Mental Health Care
-   * - Where to Start: A Survival Guide to Anxiety & Depression
-   * - Mental Health Workbook (David Lawson)
-   */
   private async ingestEpub(filePath: string, title: string) {
     this.logger.log(`Processing EPUB: ${title}`);
 
@@ -156,10 +271,6 @@ export class DocumentIngestionService {
     }
   }
 
-  /**
-   * Extracts raw text from an EPUB file using epub2.
-   * Strips HTML tags to get clean plain text for embedding.
-   */
   private extractEpubText(filePath: string): Promise<string> {
     return new Promise((resolve, reject) => {
       const epub = new EPub(filePath);
@@ -174,7 +285,6 @@ export class DocumentIngestionService {
           await new Promise<void>((res) => {
             epub.getChapter(chapterId, (err: Error | null, text: string) => {
               if (!err && text) {
-                // Strip HTML tags to get plain text
                 const plain = text
                   .replace(/<[^>]+>/g, ' ')
                   .replace(/&nbsp;/g, ' ')
@@ -202,27 +312,43 @@ export class DocumentIngestionService {
   }
 
   /**
-   * Embeds an array of text chunks and stores them in the DocumentChunk table.
+   * Embeds text chunks in batches of 10 and stores them in DocumentChunk.
    */
   private async embedAndStore(chunks: string[], title: string): Promise<void> {
     let embedded = 0;
-    for (const chunk of chunks) {
-      const embedding = await this.generateEmbedding(chunk);
+    const batchSize = 10;
 
-      if (embedding) {
-        const vectorString = `[${embedding.join(',')}]`;
-        await this.prisma.$executeRawUnsafe(
-          `INSERT INTO "DocumentChunk" (id, "bookTitle", content, embedding, "createdAt")
-           VALUES (gen_random_uuid(), $1, $2, $3::vector, NOW())`,
-          title,
-          chunk,
-          vectorString,
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      const batch = chunks.slice(i, i + batchSize);
+      const embeddings = await Promise.all(
+        batch.map((chunk) => this.generateEmbedding(chunk)),
+      );
+
+      for (let j = 0; j < batch.length; j++) {
+        const chunk = batch[j];
+        const embedding = embeddings[j];
+
+        if (embedding && embedding.length === 768) {
+          const vectorString = `[${embedding.join(',')}]`;
+          await this.prisma.$executeRawUnsafe(
+            `INSERT INTO "DocumentChunk" (id, "bookTitle", content, embedding, "createdAt")
+             VALUES (gen_random_uuid(), $1, $2, $3::vector, NOW())`,
+            title,
+            chunk,
+            vectorString,
+          );
+          embedded++;
+        } else {
+          await this.prisma.documentChunk.create({
+            data: { bookTitle: title, content: chunk },
+          });
+        }
+      }
+
+      if ((i + batchSize) % 100 < batchSize || i + batchSize >= chunks.length) {
+        this.logger.log(
+          `Ingesting "${title}": ${Math.min(i + batchSize, chunks.length)}/${chunks.length} chunks (${embedded} embedded)...`,
         );
-        embedded++;
-      } else {
-        await this.prisma.documentChunk.create({
-          data: { bookTitle: title, content: chunk },
-        });
       }
     }
 
@@ -233,7 +359,6 @@ export class DocumentIngestionService {
 
   /**
    * Generate a vector embedding for text using Ollama's nomic-embed-text model.
-   * Falls back to llama3 if nomic-embed-text is not available.
    */
   private async generateEmbedding(text: string): Promise<number[] | null> {
     try {
@@ -256,7 +381,11 @@ export class DocumentIngestionService {
     }
   }
 
-  private chunkText(text: string, chunkSize: number): string[] {
+  /**
+   * Splits text into coherent chunks of ~chunkSize characters,
+   * respecting sentence and paragraph boundaries.
+   */
+  private chunkText(text: string, chunkSize = 800): string[] {
     const paragraphs = text.split(/\n\s*\n/);
     const chunks: string[] = [];
     let currentChunk = '';
@@ -265,7 +394,25 @@ export class DocumentIngestionService {
       const cleaned = p.replace(/\s+/g, ' ').trim();
       if (!cleaned || cleaned.length < 20) continue;
 
-      if (currentChunk.length + cleaned.length > chunkSize) {
+      if (cleaned.length > chunkSize) {
+        if (currentChunk.trim()) {
+          chunks.push(currentChunk.trim());
+          currentChunk = '';
+        }
+        let remaining = cleaned;
+        while (remaining.length > chunkSize) {
+          let splitIdx = remaining.lastIndexOf('. ', chunkSize);
+          if (splitIdx === -1 || splitIdx < chunkSize / 2) {
+            splitIdx = remaining.lastIndexOf(' ', chunkSize);
+          }
+          if (splitIdx === -1) {
+            splitIdx = chunkSize;
+          }
+          chunks.push(remaining.substring(0, splitIdx + 1).trim());
+          remaining = remaining.substring(splitIdx + 1).trim();
+        }
+        currentChunk = remaining;
+      } else if (currentChunk.length + cleaned.length > chunkSize) {
         if (currentChunk.trim()) chunks.push(currentChunk.trim());
         currentChunk = cleaned;
       } else {

@@ -10,9 +10,11 @@ services:
       POSTGRES_PASSWORD: password123
       POSTGRES_DB: sagipisip_db
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      # Optional: Uncomment if sagipisip_vectors.sql is present locally to auto-seed on initial run
+      # - ./sagipisip_vectors.sql:/docker-entrypoint-initdb.d/01-vectors.sql:ro
     restart: unless-stopped
 
   # Redis for Caching and WebSockets

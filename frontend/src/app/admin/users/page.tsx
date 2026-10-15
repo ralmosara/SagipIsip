@@ -117,8 +117,8 @@ export default function UsersManagement() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">User Directory</h1>
-          <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider">Manage access and roles</p>
+          <h1 className="text-xl font-semibold text-brand-dark">User Directory</h1>
+          <p className="text-xs text-brand-gray mt-1 uppercase tracking-wider">Manage access and roles</p>
         </div>
         <div className="relative">
           <input 
@@ -144,12 +144,12 @@ export default function UsersManagement() {
 
       <div className="bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden flex flex-col">
         {loading ? (
-          <div className="p-8 text-center text-slate-500 text-sm">Loading directory...</div>
+          <div className="p-8 text-center text-brand-gray text-sm">Loading directory...</div>
         ) : (
           <div className="overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="bg-slate-50 border-b border-slate-200 text-slate-500 uppercase tracking-wider text-xs">
+                <tr className="bg-brand-light border-b border-slate-200 text-brand-gray uppercase tracking-wider text-xs">
                   <th className="px-6 py-3 font-semibold">User</th>
                   <th className="px-6 py-3 font-semibold">Role</th>
                   <th className="px-6 py-3 font-semibold">Joined</th>
@@ -158,21 +158,21 @@ export default function UsersManagement() {
               </thead>
               <tbody className="divide-y divide-slate-200">
                 {filteredUsers.map((user) => (
-                  <tr key={user.id} className="hover:bg-slate-50 transition-colors">
+                  <tr key={user.id} className="hover:bg-brand-light transition-colors">
                     <td className="px-6 py-3">
-                      <div className="font-medium text-slate-900">{user.name}</div>
-                      <div className="text-slate-500 text-xs mt-0.5">{user.email}</div>
+                      <div className="font-medium text-brand-dark">{user.name}</div>
+                      <div className="text-brand-gray text-xs mt-0.5">{user.email}</div>
                     </td>
                     <td className="px-6 py-3">
                       <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border
                         ${user.role === 'ADMIN' ? 'bg-indigo-50 text-indigo-700 border-indigo-200' : 
                           user.role === 'THERAPIST' ? 'bg-teal-50 text-teal-700 border-teal-200' : 
-                          'bg-slate-50 text-slate-700 border-slate-200'}`}
+                          'bg-brand-light text-brand-gray border-slate-200'}`}
                       >
                         {user.role}
                       </span>
                     </td>
-                    <td className="px-6 py-3 text-slate-500">
+                    <td className="px-6 py-3 text-brand-gray">
                       {new Date(user.createdAt).toLocaleDateString()}
                     </td>
                     <td className="px-6 py-3 text-right">
@@ -196,7 +196,7 @@ export default function UsersManagement() {
                 ))}
                 {filteredUsers.length === 0 && (
                   <tr>
-                    <td colSpan={4} className="px-6 py-8 text-center text-slate-500">
+                    <td colSpan={4} className="px-6 py-8 text-center text-brand-gray">
                       No users found.
                     </td>
                   </tr>
@@ -211,17 +211,17 @@ export default function UsersManagement() {
       {isEditModalOpen && selectedUser && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50">
           <div className="bg-white rounded-md shadow-xl w-full max-w-sm overflow-hidden border border-slate-200">
-            <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-              <h3 className="text-base font-semibold text-slate-900">Modify Access Role</h3>
+            <div className="p-4 border-b border-slate-200 bg-brand-light flex justify-between items-center">
+              <h3 className="text-base font-semibold text-brand-dark">Modify Access Role</h3>
               <button onClick={() => setIsEditModalOpen(false)} className="text-slate-400 hover:text-slate-600"><X size={16}/></button>
             </div>
             <div className="p-4 space-y-4">
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">Target User</label>
-                <div className="text-sm font-medium text-slate-900">{selectedUser.email}</div>
+                <label className="block text-xs font-semibold text-brand-gray uppercase tracking-wider mb-1">Target User</label>
+                <div className="text-sm font-medium text-brand-dark">{selectedUser.email}</div>
               </div>
               <div>
-                <label className="block text-xs font-semibold text-slate-700 uppercase tracking-wider mb-1">New Role</label>
+                <label className="block text-xs font-semibold text-brand-gray uppercase tracking-wider mb-1">New Role</label>
                 <select 
                   value={newRole}
                   onChange={(e) => setNewRole(e.target.value)}
@@ -233,10 +233,10 @@ export default function UsersManagement() {
                 </select>
               </div>
             </div>
-            <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+            <div className="p-4 border-t border-slate-200 bg-brand-light flex justify-end gap-3">
               <button 
                 onClick={() => setIsEditModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50"
+                className="px-4 py-2 text-sm font-medium text-brand-gray bg-white border border-slate-300 rounded-md hover:bg-brand-light"
               >
                 Cancel
               </button>
@@ -261,14 +261,14 @@ export default function UsersManagement() {
             </div>
             <div className="p-5">
               <p className="text-sm text-slate-600">
-                Are you sure you want to revoke access for <strong className="text-slate-900">{selectedUser.email}</strong>? 
+                Are you sure you want to revoke access for <strong className="text-brand-dark">{selectedUser.email}</strong>? 
                 This action will soft-delete their account and prevent login.
               </p>
             </div>
-            <div className="p-4 border-t border-slate-200 bg-slate-50 flex justify-end gap-3">
+            <div className="p-4 border-t border-slate-200 bg-brand-light flex justify-end gap-3">
               <button 
                 onClick={() => setIsDeleteModalOpen(false)}
-                className="px-4 py-2 text-sm font-medium text-slate-700 bg-white border border-slate-300 rounded-md hover:bg-slate-50"
+                className="px-4 py-2 text-sm font-medium text-brand-gray bg-white border border-slate-300 rounded-md hover:bg-brand-light"
               >
                 Cancel
               </button>
