@@ -55,26 +55,26 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-[#F4F6F8] text-[#041E42] font-sans selection:bg-[#00CCFF] selection:text-[#041E42]">
+    <div className="flex h-screen bg-[#FAFAFA] text-[#2E2D29] font-sans selection:bg-[#820000] selection:text-[#2E2D29]">
       {/* Mobile Sidebar Overlay */}
       {isSidebarOpen && (
         <div 
-          className="fixed inset-0 z-40 bg-[#041E42]/40 backdrop-blur-sm lg:hidden transition-opacity"
+          className="fixed inset-0 z-40 bg-[#2E2D29]/40 backdrop-blur-sm lg:hidden transition-opacity"
           onClick={() => setSidebarOpen(false)}
         />
       )}
 
       {/* Pfizer-styled Clinical Sidebar */}
       <aside 
-        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-[#E2E8F0] transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 shadow-[4px_0_24px_rgba(4,30,66,0.02)]
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-white border-r border-[#E2E8F0] transition-transform duration-300 ease-in-out lg:translate-x-0 lg:static lg:inset-0 shadow-[4px_0_24px_rgba(46,45,41,0.02)]
         ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
         <div className="flex h-[72px] items-center px-6 border-b border-[#E2E8F0]">
-          <div className="flex items-center justify-center w-8 h-8 rounded bg-gradient-to-br from-[#001CD6] to-[#00CCFF] text-white mr-3 shadow-md">
+          <div className="flex items-center justify-center w-8 h-8 rounded bg-gradient-to-br from-[#8C1515] to-[#820000] text-white mr-3 shadow-md">
             <Stethoscope size={18} strokeWidth={2} />
           </div>
-          <span className="text-[1.1rem] font-bold tracking-tight text-[#041E42]">
+          <span className="text-[1.1rem] font-bold tracking-tight text-[#2E2D29]">
             SagipIsip <span className="font-light">Clinical</span>
           </span>
         </div>
@@ -82,7 +82,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
         <nav className="px-4 py-6 space-y-6 overflow-y-auto h-[calc(100vh-[72px])] custom-scrollbar">
           {sidebarGroups.map((group) => (
             <div key={group.label}>
-              <h3 className="px-3 text-[10px] font-bold text-[#64748B] uppercase tracking-[0.15em] mb-3">
+              <h3 className="px-3 text-[10px] font-bold text-[#4D4F53] uppercase tracking-[0.15em] mb-3">
                 {group.label}
               </h3>
               <div className="space-y-1">
@@ -96,12 +96,12 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                       href={link.href}
                       className={`flex items-center px-3 py-2.5 text-sm font-medium rounded-md transition-all duration-200
                         ${isActive 
-                          ? 'bg-[#F0F4FA] text-[#001CD6] border-l-4 border-[#001CD6]' 
-                          : 'text-[#475569] border-l-4 border-transparent hover:bg-[#F8FAFC] hover:text-[#041E42]'}
+                          ? 'bg-[#F0F4FA] text-[#8C1515] border-l-4 border-[#8C1515]' 
+                          : 'text-[#4D4F53] border-l-4 border-transparent hover:bg-[#F8FAFC] hover:text-[#2E2D29]'}
                       `}
                       onClick={() => setSidebarOpen(false)}
                     >
-                      <Icon className={`mr-3 h-[18px] w-[18px] ${isActive ? 'text-[#001CD6]' : 'text-[#64748B]'}`} strokeWidth={isActive ? 2.5 : 2} />
+                      <Icon className={`mr-3 h-[18px] w-[18px] ${isActive ? 'text-[#8C1515]' : 'text-[#4D4F53]'}`} strokeWidth={isActive ? 2.5 : 2} />
                       {link.label}
                     </Link>
                   );
@@ -113,9 +113,9 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <div className="pt-6 mt-6 border-t border-[#E2E8F0]">
             <Link
               href="/"
-              className="flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-[#475569] hover:bg-[#F8FAFC] hover:text-[#041E42] transition-colors border-l-4 border-transparent"
+              className="flex items-center px-3 py-2.5 text-sm font-medium rounded-md text-[#4D4F53] hover:bg-[#F8FAFC] hover:text-[#2E2D29] transition-colors border-l-4 border-transparent"
             >
-              <LogOut className="mr-3 h-[18px] w-[18px] text-[#64748B]" strokeWidth={2} />
+              <LogOut className="mr-3 h-[18px] w-[18px] text-[#4D4F53]" strokeWidth={2} />
               End Session
             </Link>
           </div>
@@ -123,46 +123,46 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#F4F6F8]">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-[#FAFAFA]">
         {/* Header App Bar */}
-        <header className="h-[72px] flex items-center justify-between px-6 lg:px-10 bg-white border-b border-[#E2E8F0] z-10 sticky top-0 shadow-[0_4px_24px_rgba(4,30,66,0.02)]">
+        <header className="h-[72px] flex items-center justify-between px-6 lg:px-10 bg-white border-b border-[#E2E8F0] z-10 sticky top-0 shadow-[0_4px_24px_rgba(46,45,41,0.02)]">
           <div className="flex items-center">
             <button 
-              className="lg:hidden p-2 -ml-2 mr-3 rounded-md text-[#64748B] hover:bg-[#F1F5F9] transition-colors"
+              className="lg:hidden p-2 -ml-2 mr-3 rounded-md text-[#4D4F53] hover:bg-[#F1F5F9] transition-colors"
               onClick={() => setSidebarOpen(true)}
             >
               <Menu className="h-6 w-6" strokeWidth={2} />
             </button>
-            <div className="hidden md:flex items-center bg-[#F8FAFC] px-4 py-2 rounded-md w-[400px] border border-[#E2E8F0] focus-within:border-[#001CD6] focus-within:ring-1 focus-within:ring-[#001CD6] transition-all">
+            <div className="hidden md:flex items-center bg-[#F8FAFC] px-4 py-2 rounded-md w-[400px] border border-[#E2E8F0] focus-within:border-[#8C1515] focus-within:ring-1 focus-within:ring-[#8C1515] transition-all">
               <Search className="h-4 w-4 text-[#94A3B8] mr-3" />
               <input 
                 type="text" 
                 placeholder="Search patient IDs, protocols, or audit logs..." 
-                className="bg-transparent border-none outline-none text-sm w-full text-[#041E42] placeholder-[#94A3B8]"
+                className="bg-transparent border-none outline-none text-sm w-full text-[#2E2D29] placeholder-[#94A3B8]"
               />
             </div>
           </div>
           
           <div className="flex items-center gap-4">
-            <button className="text-[#64748B] hover:text-[#001CD6] transition-colors">
+            <button className="text-[#4D4F53] hover:text-[#8C1515] transition-colors">
               <HelpCircle className="h-5 w-5" strokeWidth={2} />
             </button>
-            <button className="text-[#64748B] hover:text-[#001CD6] transition-colors">
+            <button className="text-[#4D4F53] hover:text-[#8C1515] transition-colors">
               <Settings className="h-5 w-5" strokeWidth={2} />
             </button>
-            <button className="text-[#64748B] hover:text-[#001CD6] transition-colors relative mr-2">
+            <button className="text-[#4D4F53] hover:text-[#8C1515] transition-colors relative mr-2">
               <Bell className="h-5 w-5" strokeWidth={2} />
-              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-[#00CCFF] ring-2 ring-white"></span>
+              <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-[#820000] ring-2 ring-white"></span>
             </button>
             
             <div className="h-8 border-l border-[#E2E8F0] mx-1"></div>
             
             <div className="flex items-center gap-3">
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-[#041E42] leading-none">Dr. Admin</p>
-                <p className="text-[11px] text-[#64748B] mt-1">System Administrator</p>
+                <p className="text-sm font-semibold text-[#2E2D29] leading-none">Dr. Admin</p>
+                <p className="text-[11px] text-[#4D4F53] mt-1">System Administrator</p>
               </div>
-              <div className="h-10 w-10 rounded bg-[#F0F4FA] text-[#001CD6] flex items-center justify-center text-sm font-bold border border-[#E2E8F0] shadow-sm">
+              <div className="h-10 w-10 rounded bg-[#F0F4FA] text-[#8C1515] flex items-center justify-center text-sm font-bold border border-[#E2E8F0] shadow-sm">
                 AD
               </div>
             </div>

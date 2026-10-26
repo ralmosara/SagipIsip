@@ -11,7 +11,10 @@ import {
   FileText,
   TrendingUp,
   TrendingDown,
-  BrainCircuit
+  BrainCircuit,
+  BookOpen,
+  Sparkles,
+  Loader2
 } from 'lucide-react';
 import { 
   LineChart, 
@@ -40,6 +43,59 @@ export default function TherapistDashboard() {
   const [searchTerm, setSearchTerm] = useState('');
   const [patients, setPatients] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [vectorQuery, setVectorQuery] = useState('');
+  const [vectorSearching, setVectorSearching] = useState(false);
+  const [vectorResults, setVectorResults] = useState<any[]>([]);
+  const [clinicalSynthesis, setClinicalSynthesis] = useState<string | null>(null);
+
+  const handleVectorSearch = async () => {
+    if (!vectorQuery.trim()) return;
+    setVectorSearching(true);
+    setClinicalSynthesis(null);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/therapist/consult/search?q=${encodeURIComponent(vectorQuery)}&limit=3`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setVectorResults(data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setVectorSearching(false);
+    }
+  };
+
+  const handleClinicalConsult = async () => {
+    if (!vectorQuery.trim()) return;
+    setVectorSearching(true);
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/therapist/consult`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`
+          },
+          body: JSON.stringify({ query: vectorQuery, topK: 3 })
+        }
+      );
+      if (res.ok) {
+        const data = await res.json();
+        setClinicalSynthesis(data.answer);
+        setVectorResults(data.chunks || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setVectorSearching(false);
+    }
+  };
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -85,7 +141,7 @@ export default function TherapistDashboard() {
 
   if (loading) {
     return (
-      <div className="flex h-64 items-center justify-center text-slate-500 text-sm">
+      <div className="flex h-64 items-center justify-center text-brand-gray text-sm">
         <Activity className="h-4 w-4 mr-2 animate-spin" /> Fetching patient telemetry...
       </div>
     );
@@ -95,8 +151,8 @@ export default function TherapistDashboard() {
     <div className="space-y-6">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-4 border-b border-slate-200">
         <div>
-          <h1 className="text-xl font-semibold text-slate-900">Clinical Dashboard</h1>
-          <p className="text-xs text-slate-500 mt-1 uppercase tracking-wider">
+          <h1 className="text-xl font-semibold text-brand-dark">Clinical Dashboard</h1>
+          <p className="text-xs text-brand-gray mt-1 uppercase tracking-wider">
             Patient telemetry and recent activities
           </p>
         </div>
@@ -112,12 +168,12 @@ export default function TherapistDashboard() {
               className="bg-white rounded-md p-5 border border-slate-200 shadow-sm flex flex-col"
             >
               <div className="flex justify-between items-start mb-4">
-                <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider">{stat.title}</span>
+                <span className="text-xs font-semibold text-brand-gray uppercase tracking-wider">{stat.title}</span>
                 <Icon size={16} className={`text-${stat.color}-600`} />
               </div>
               <div className="flex items-end justify-between mt-auto">
-                <span className="text-2xl font-bold text-slate-900">{stat.value}</span>
-                <span className={`text-xs font-medium ${stat.color === 'red' && parseInt(stat.value) > 0 ? 'text-red-600' : 'text-slate-500'}`}>
+                <span className="text-2xl font-bold text-brand-dark">{stat.value}</span>
+                <span className={`text-xs font-medium ${stat.color === 'red' && parseInt(stat.value) > 0 ? 'text-red-600' : 'text-brand-gray'}`}>
                   {stat.trend}
                 </span>
               </div>
@@ -130,9 +186,9 @@ export default function TherapistDashboard() {
         
         {/* Patient Status Board */}
         <div className="xl:col-span-2 bg-white rounded-md border border-slate-200 shadow-sm overflow-hidden flex flex-col">
-          <div className="p-4 border-b border-slate-200 bg-slate-50 flex justify-between items-center">
-            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider flex items-center gap-2">
-              <Users size={16} className="text-indigo-600" /> Patient Watchlist
+          <div className="p-4 border-b border-slate-200 bg-brand-light flex justify-between items-center">
+            <h2 className="text-sm font-semibold text-brand-dark uppercase tracking-wider flex items-center gap-2">
+              <Users size={16} className="text-brand-red" /> Patient Watchlist
             </h2>
             <div className="relative">
               <input 
@@ -149,7 +205,7 @@ export default function TherapistDashboard() {
           <div className="flex-1 overflow-x-auto">
             <table className="w-full text-left text-sm">
               <thead>
-                <tr className="bg-white border-b border-slate-200 text-slate-500 uppercase tracking-wider text-xs">
+                <tr className="bg-white border-b border-slate-200 text-brand-gray uppercase tracking-wider text-xs">
                   <th className="px-4 py-3 font-semibold">Patient</th>
                   <th className="px-4 py-3 font-semibold">Latest Session Summary</th>
                   <th className="px-4 py-3 font-semibold">Habit Correlation</th>
@@ -163,9 +219,9 @@ export default function TherapistDashboard() {
                   const isCritical = latestSummary?.riskLevel === 'HIGH';
                   
                   return (
-                    <tr key={patient.id} className="hover:bg-slate-50 transition-colors">
+                    <tr key={patient.id} className="hover:bg-brand-light transition-colors">
                       <td className="px-4 py-3">
-                        <div className="font-medium text-slate-900">{patient.name}</div>
+                        <div className="font-medium text-brand-dark">{patient.name}</div>
                         <div className="text-xs text-slate-400 font-mono">ID: {patient.id.substring(0, 8)}...</div>
                       </td>
                       <td className="px-4 py-3 text-xs text-slate-600 max-w-xs truncate">
@@ -178,11 +234,11 @@ export default function TherapistDashboard() {
                         {isCritical ? (
                           <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-red-200 text-xs font-medium bg-red-50 text-red-700"><TrendingDown size={12}/> Critical</span>
                         ) : (
-                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-slate-200 text-xs font-medium bg-slate-50 text-slate-700">Stable</span>
+                          <span className="inline-flex items-center gap-1.5 px-2 py-0.5 rounded border border-slate-200 text-xs font-medium bg-brand-light text-brand-gray">Stable</span>
                         )}
                       </td>
                       <td className="px-4 py-3 text-right">
-                        <Link href={`/therapist/patient/${patient.id}`} className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-indigo-600 rounded transition-colors border border-transparent hover:border-indigo-200 hover:bg-indigo-50">
+                        <Link href={`/therapist/patient/${patient.id}`} className="inline-flex items-center justify-center p-1.5 text-slate-400 hover:text-brand-red rounded transition-colors border border-transparent hover:border-indigo-200 hover:bg-indigo-50">
                           <ChevronRight size={16} />
                         </Link>
                       </td>
@@ -191,7 +247,7 @@ export default function TherapistDashboard() {
                 })}
                 {patients.length === 0 && (
                    <tr>
-                     <td colSpan={4} className="px-4 py-8 text-center text-slate-500 text-sm">No patients found.</td>
+                     <td colSpan={4} className="px-4 py-8 text-center text-brand-gray text-sm">No patients found.</td>
                    </tr>
                 )}
               </tbody>
@@ -202,10 +258,10 @@ export default function TherapistDashboard() {
         {/* Global Average Chart */}
         <div className="bg-white rounded-md p-5 border border-slate-200 shadow-sm flex flex-col">
           <div className="mb-6">
-            <h2 className="text-sm font-semibold text-slate-900 uppercase tracking-wider text-red-600 flex items-center gap-2">
+            <h2 className="text-sm font-semibold text-brand-dark uppercase tracking-wider text-red-600 flex items-center gap-2">
               <AlertTriangle size={16} /> Active Alerts
             </h2>
-            <p className="text-xs text-slate-500 mt-1">High risk chat sessions.</p>
+            <p className="text-xs text-brand-gray mt-1">High risk chat sessions.</p>
           </div>
           
           <div className="flex-1 w-full overflow-y-auto space-y-3">
@@ -223,6 +279,100 @@ export default function TherapistDashboard() {
           </div>
         </div>
 
+      </div>
+
+      {/* Clinical Vector Consultation Tool for Therapists */}
+      <div className="bg-white rounded-md border border-slate-200 shadow-sm p-5 space-y-4">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-slate-100 pb-3">
+          <div className="flex items-center gap-2">
+            <div className="p-1.5 bg-teal-50 text-teal-700 rounded-md border border-teal-200">
+              <BookOpen size={16} />
+            </div>
+            <div>
+              <h2 className="text-sm font-semibold text-brand-dark uppercase tracking-wider">
+                Clinical Knowledge Consultation (18,047 Vector Chunks)
+              </h2>
+              <p className="text-xs text-brand-gray">
+                Cross-reference evidence-based clinical protocols (CBT, DBT, Attachment, Dissociation, NICE Guidelines)
+              </p>
+            </div>
+          </div>
+          <span className="text-[11px] font-semibold text-teal-700 bg-teal-50 px-2.5 py-1 rounded-full border border-teal-200">
+            pgvector HNSW Active
+          </span>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-2">
+          <div className="relative flex-1">
+            <input 
+              type="text"
+              placeholder="e.g. Dissociation treatment protocol, NICE Guideline antenatal depression, TIPP distress tolerance..."
+              className="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded text-xs focus:outline-none focus:ring-1 focus:ring-teal-500"
+              value={vectorQuery}
+              onChange={(e) => setVectorQuery(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && handleVectorSearch()}
+            />
+            <Search size={14} className="absolute left-3 top-2.5 text-slate-400" />
+          </div>
+          <div className="flex gap-2">
+            <button
+              onClick={handleVectorSearch}
+              disabled={vectorSearching || !vectorQuery.trim()}
+              className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5 transition cursor-pointer border border-slate-200"
+            >
+              {vectorSearching ? <Loader2 size={13} className="animate-spin" /> : <Search size={13} />}
+              Search Literature
+            </button>
+            <button
+              onClick={handleClinicalConsult}
+              disabled={vectorSearching || !vectorQuery.trim()}
+              className="px-4 py-2 bg-teal-700 hover:bg-teal-800 text-white rounded text-xs font-semibold disabled:opacity-50 flex items-center gap-1.5 transition cursor-pointer shadow-sm"
+            >
+              {vectorSearching ? <Loader2 size={13} className="animate-spin" /> : <Sparkles size={13} />}
+              Synthesize Guidance
+            </button>
+          </div>
+        </div>
+
+        {/* Synthesized Guidance */}
+        {clinicalSynthesis && (
+          <div className="p-4 bg-teal-50/70 border border-teal-200 rounded-md space-y-2">
+            <div className="flex items-center gap-2 text-xs font-bold text-teal-900 uppercase tracking-wider">
+              <Sparkles size={14} className="text-teal-700" /> Clinical Recommendation
+            </div>
+            <p className="text-xs text-slate-800 whitespace-pre-wrap leading-relaxed">
+              {clinicalSynthesis}
+            </p>
+          </div>
+        )}
+
+        {/* Matched Literature Results */}
+        {vectorResults.length > 0 && (
+          <div className="space-y-2 pt-1">
+            <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+              Relevant Textbook Excerpts:
+            </span>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+              {vectorResults.map((chunk, idx) => (
+                <div key={idx} className="p-3 bg-slate-50 border border-slate-200 rounded-md space-y-1.5 text-xs">
+                  <div className="flex justify-between items-start">
+                    <span className="font-semibold text-teal-950 truncate max-w-[75%]" title={chunk.bookTitle}>
+                      📖 {chunk.bookTitle}
+                    </span>
+                    {chunk.similarity !== undefined && (
+                      <span className="text-[10px] bg-teal-100 text-teal-800 font-bold px-1.5 py-0.5 rounded">
+                        {(chunk.similarity * 100).toFixed(0)}%
+                      </span>
+                    )}
+                  </div>
+                  <p className="text-slate-600 line-clamp-4 italic text-[11px] leading-relaxed">
+                    "{chunk.content}"
+                  </p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );

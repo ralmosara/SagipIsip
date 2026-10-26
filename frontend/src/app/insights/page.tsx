@@ -24,13 +24,13 @@ export default function InsightsPage() {
         <div className="flex space-x-4 border-b border-slate-700/50 pb-2">
           <button 
             onClick={() => setActiveTab('correlations')}
-            className={`pb-2 px-2 text-lg font-medium transition-colors border-b-2 ${activeTab === 'correlations' ? 'border-indigo-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+            className={`pb-2 px-2 text-lg font-medium transition-colors border-b-2 ${activeTab === 'correlations' ? 'border-indigo-500 text-white' : 'border-transparent text-brand-gray hover:text-slate-300'}`}
           >
             Mood Correlations
           </button>
           <button 
             onClick={() => setActiveTab('habits')}
-            className={`pb-2 px-2 text-lg font-medium transition-colors border-b-2 ${activeTab === 'habits' ? 'border-teal-500 text-white' : 'border-transparent text-slate-500 hover:text-slate-300'}`}
+            className={`pb-2 px-2 text-lg font-medium transition-colors border-b-2 ${activeTab === 'habits' ? 'border-teal-500 text-white' : 'border-transparent text-brand-gray hover:text-slate-300'}`}
           >
             Daily Habits
           </button>
@@ -77,7 +77,7 @@ export default function InsightsPage() {
               <p className="text-slate-400 mb-6">Logging physical activity reduces reports of "anxious thoughts" by 40% the following day.</p>
               
               <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4">
-                <p className="text-indigo-200 text-sm italic">
+                <p className="text-brand-light text-sm italic">
                   "AI Observation: You tend to feel significantly more grounded on days you take a 20-minute walk."
                 </p>
               </div>
@@ -104,7 +104,7 @@ export default function InsightsPage() {
                   <span className="text-emerald-300 font-medium z-10">Exercise</span>
                   <svg className="absolute bottom-2 right-2 w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="3" d="M5 13l4 4L19 7"></path></svg>
                 </button>
-                <button className="flex flex-col items-center justify-center p-6 bg-slate-700/50 hover:bg-indigo-600/30 rounded-2xl border border-slate-600 hover:border-indigo-500 transition-all group">
+                <button className="flex flex-col items-center justify-center p-6 bg-slate-700/50 hover:bg-brand-red/30 rounded-2xl border border-slate-600 hover:border-indigo-500 transition-all group">
                   <span className="text-3xl mb-3 group-hover:scale-110 transition-transform">🧘‍♀️</span>
                   <span className="text-slate-300 font-medium">Meditation</span>
                 </button>

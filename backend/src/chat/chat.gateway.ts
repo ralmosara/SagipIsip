@@ -290,10 +290,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
       // ── 4. RAG Context Injection ─────────────────────────────────────────
       // Source: AI-First Healthcare (Holley & Becker) — RAG grounds AI responses in
       // verified clinical knowledge, reducing hallucination risk.
-      const ragContext = await this.ragService.retrieveRelevantContext(
-        payload.text,
-        4,
-      );
+      const { context: ragContext, sources, chunks } =
+        await this.ragService.retrieveContextWithSources(payload.text, 4);
 
       if (ragContext) {
         systemPrompt +=
@@ -370,6 +368,14 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
       const aiResponse = response.message.content;
 
+      const citations = chunks
+        ? chunks.map((c) => ({
+            bookTitle: c.bookTitle,
+            snippet: c.content.length > 200 ? c.content.substring(0, 197) + '...' : c.content,
+            similarity: c.similarity,
+          }))
+        : [];
+
       // ── 7. Save AI response & emit ───────────────────────────────────────
       if (userId) {
         await this.prisma.chatHistory.create({
@@ -379,6 +385,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           sender: 'ai',
           text: aiResponse,
           hasRagContext: !!ragContext,
+          sources: sources || [],
+          citations,
           riskLevel: 'LOW',
         });
       } else {
@@ -386,6 +394,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
           sender: 'ai',
           text: aiResponse,
           hasRagContext: !!ragContext,
+          sources: sources || [],
+          citations,
           riskLevel: 'LOW',
         });
       }

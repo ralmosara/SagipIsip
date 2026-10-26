@@ -78,7 +78,7 @@ export default function WorkbooksDashboard() {
       <main className="relative max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mt-12 z-10">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-10 gap-4">
           <div>
-            <h2 className="text-3xl font-outfit font-bold text-slate-900 tracking-tight drop-shadow-sm flex items-center gap-3">
+            <h2 className="text-3xl font-outfit font-bold text-brand-dark tracking-tight drop-shadow-sm flex items-center gap-3">
               Your Journey <span className="bg-emerald-500 text-white text-sm px-3 py-1 rounded-full flex items-center gap-1 shadow-sm"><Star size={14} fill="currentColor" /> Level 3</span>
             </h2>
             <p className="text-slate-600 mt-2 font-medium">Reflect, reframe, and earn rewards as you grow.</p>
@@ -109,13 +109,13 @@ export default function WorkbooksDashboard() {
                 <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-lg border-4 border-white z-10">
                   <Star size={20} fill="currentColor" />
                 </div>
-                <span className="mt-3 font-bold text-slate-700 text-sm">Initiation</span>
+                <span className="mt-3 font-bold text-brand-gray text-sm">Initiation</span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 rounded-full bg-emerald-500 flex items-center justify-center text-white shadow-lg border-4 border-white z-10">
                   <BookOpen size={20} fill="currentColor" />
                 </div>
-                <span className="mt-3 font-bold text-slate-700 text-sm">Awareness</span>
+                <span className="mt-3 font-bold text-brand-gray text-sm">Awareness</span>
               </div>
               <div className="flex flex-col items-center">
                 <div className="w-12 h-12 rounded-full bg-teal-500 flex items-center justify-center text-white shadow-[0_0_15px_rgba(20,184,166,0.6)] border-4 border-white z-10 scale-110">
@@ -131,7 +131,7 @@ export default function WorkbooksDashboard() {
               </div>
             </div>
           </div>
-          <p className="text-sm text-slate-500 mt-6 text-center font-medium">Complete 2 more exercises to unlock the Resilience module!</p>
+          <p className="text-sm text-brand-gray mt-6 text-center font-medium">Complete 2 more exercises to unlock the Resilience module!</p>
         </div>
 
         {loading ? (

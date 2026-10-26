@@ -25,7 +25,7 @@ export default function TherapistLayout({ children }: { children: React.ReactNod
   const [isSidebarOpen, setSidebarOpen] = useState(false);
 
   return (
-    <div className="flex h-screen bg-slate-50 text-slate-900 font-sans">
+    <div className="flex h-screen bg-brand-light text-brand-dark font-sans">
       {isSidebarOpen && (
         <div 
           className="fixed inset-0 z-40 bg-slate-900/50 lg:hidden"
@@ -40,7 +40,7 @@ export default function TherapistLayout({ children }: { children: React.ReactNod
         `}
       >
         <div className="flex h-14 items-center px-4 border-b border-slate-800">
-          <div className="bg-indigo-600 p-1.5 rounded mr-3 text-white">
+          <div className="bg-brand-red p-1.5 rounded mr-3 text-white">
             <Stethoscope size={16} />
           </div>
           <span className="text-sm font-semibold tracking-tight text-white uppercase">
@@ -60,7 +60,7 @@ export default function TherapistLayout({ children }: { children: React.ReactNod
                   href={link.href}
                   className={`flex items-center px-3 py-2 text-sm font-medium rounded-md transition-colors
                     ${isActive 
-                      ? 'bg-indigo-600 text-white' 
+                      ? 'bg-brand-red text-white' 
                       : 'text-slate-400 hover:bg-slate-800 hover:text-white'}
                   `}
                   onClick={() => setSidebarOpen(false)}
@@ -85,10 +85,10 @@ export default function TherapistLayout({ children }: { children: React.ReactNod
       </aside>
 
       {/* Main Content Area */}
-      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-slate-50">
+      <main className="flex-1 flex flex-col min-w-0 overflow-hidden bg-brand-light">
         <header className="h-14 flex items-center justify-between px-4 sm:px-6 lg:px-8 bg-white border-b border-slate-200 z-10 sticky top-0">
           <button 
-            className="lg:hidden p-1.5 rounded-md text-slate-500 hover:bg-slate-100"
+            className="lg:hidden p-1.5 rounded-md text-brand-gray hover:bg-slate-100"
             onClick={() => setSidebarOpen(true)}
           >
             <Menu className="h-5 w-5" />
@@ -102,10 +102,10 @@ export default function TherapistLayout({ children }: { children: React.ReactNod
               </div>
               <div className="h-5 w-px bg-slate-200 mx-1"></div>
               <div className="text-right hidden sm:block">
-                <p className="text-sm font-semibold text-slate-900">Dr. Sarah Smith</p>
-                <p className="text-xs text-slate-500">Clinical Therapist</p>
+                <p className="text-sm font-semibold text-brand-dark">Dr. Sarah Smith</p>
+                <p className="text-xs text-brand-gray">Clinical Therapist</p>
               </div>
-              <div className="h-8 w-8 rounded bg-indigo-600 flex items-center justify-center text-white text-xs font-bold">
+              <div className="h-8 w-8 rounded bg-brand-red flex items-center justify-center text-white text-xs font-bold">
                 SS
               </div>
             </div>

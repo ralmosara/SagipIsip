@@ -56,7 +56,7 @@ export default function PatientDetail({ params }: { params: Promise<{ id: string
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-50 flex justify-center items-center">
+      <div className="min-h-screen bg-brand-light flex justify-center items-center">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600"></div>
       </div>
     );
@@ -71,12 +71,12 @@ export default function PatientDetail({ params }: { params: Promise<{ id: string
   }));
 
   return (
-    <div className="min-h-screen bg-slate-50 font-sans pb-12">
+    <div className="min-h-screen bg-brand-light font-sans pb-12">
       <header className="bg-white border-b border-slate-200 p-4 sticky top-0 z-10">
         <div className="max-w-6xl mx-auto flex items-center justify-between">
           <button 
             onClick={() => router.push('/therapist')}
-            className="flex items-center text-slate-500 hover:text-slate-800 transition-colors font-medium"
+            className="flex items-center text-brand-gray hover:text-slate-800 transition-colors font-medium"
           >
             <ArrowLeft size={20} className="mr-2" /> Back to Patient List
           </button>
@@ -92,7 +92,7 @@ export default function PatientDetail({ params }: { params: Promise<{ id: string
           </div>
           <div>
             <h1 className="text-3xl font-bold text-slate-800 mb-2">{patient.name}</h1>
-            <div className="flex items-center text-slate-500 space-x-6 text-sm">
+            <div className="flex items-center text-brand-gray space-x-6 text-sm">
               <span className="flex items-center"><User size={16} className="mr-2" /> {patient.email}</span>
               <span className="flex items-center"><Calendar size={16} className="mr-2" /> Joined {new Date(patient.createdAt).toLocaleDateString()}</span>
             </div>
@@ -116,14 +116,14 @@ export default function PatientDetail({ params }: { params: Promise<{ id: string
                       <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
                       <XAxis 
                         dataKey="date" 
-                        tick={{fontSize: 12, fill: '#64748b'}} 
+                        tick={{fontSize: 12, fill: '#4D4F53'}} 
                         axisLine={false} 
                         tickLine={false} 
                       />
                       <YAxis 
                         domain={[1, 5]} 
                         ticks={[1, 2, 3, 4, 5]} 
-                        tick={{fontSize: 12, fill: '#64748b'}} 
+                        tick={{fontSize: 12, fill: '#4D4F53'}} 
                         axisLine={false} 
                         tickLine={false}
                         tickFormatter={(val) => {
@@ -146,7 +146,7 @@ export default function PatientDetail({ params }: { params: Promise<{ id: string
                   </ResponsiveContainer>
                 </div>
               ) : (
-                <div className="h-48 flex items-center justify-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <div className="h-48 flex items-center justify-center text-slate-400 bg-brand-light rounded-xl border border-dashed border-slate-200">
                   No mood logs available yet.
                 </div>
               )}
@@ -161,13 +161,13 @@ export default function PatientDetail({ params }: { params: Promise<{ id: string
               {patient.workbooks.length > 0 ? (
                 <div className="space-y-4">
                   {patient.workbooks.map(wb => (
-                    <div key={wb.id} className="p-4 border border-slate-100 rounded-xl bg-slate-50 hover:bg-white hover:shadow-sm transition-all cursor-pointer">
+                    <div key={wb.id} className="p-4 border border-slate-100 rounded-xl bg-brand-light hover:bg-white hover:shadow-sm transition-all cursor-pointer">
                       <div className="flex justify-between items-start mb-2">
-                        <h3 className="font-bold text-slate-700">{wb.title}</h3>
+                        <h3 className="font-bold text-brand-gray">{wb.title}</h3>
                         <span className="text-xs text-slate-400 font-medium">{new Date(wb.createdAt).toLocaleDateString()}</span>
                       </div>
                       {/* Preview content if it's JSON */}
-                      <div className="text-sm text-slate-500 line-clamp-2">
+                      <div className="text-sm text-brand-gray line-clamp-2">
                         {wb.content.includes('"situation"') 
                           ? JSON.parse(wb.content).situation 
                           : wb.content}
@@ -176,7 +176,7 @@ export default function PatientDetail({ params }: { params: Promise<{ id: string
                   ))}
                 </div>
               ) : (
-                <div className="p-8 text-center text-slate-400 bg-slate-50 rounded-xl border border-dashed border-slate-200">
+                <div className="p-8 text-center text-slate-400 bg-brand-light rounded-xl border border-dashed border-slate-200">
                   No CBT workbooks completed yet.
                 </div>
               )}
@@ -198,7 +198,7 @@ export default function PatientDetail({ params }: { params: Promise<{ id: string
                         ? 'bg-red-50 border-red-200'
                         : s.riskLevel === 'MEDIUM'
                         ? 'bg-amber-50 border-amber-200'
-                        : 'bg-slate-50 border-slate-100'
+                        : 'bg-brand-light border-slate-100'
                     }`}>
                       <div className="flex justify-between items-center mb-1">
                         <span className={`inline-flex items-center gap-1 text-xs font-bold px-2 py-0.5 rounded-full ${
@@ -211,7 +211,7 @@ export default function PatientDetail({ params }: { params: Promise<{ id: string
                         </span>
                         <span className="text-xs text-slate-400">{new Date(s.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <p className="text-slate-700 text-xs line-clamp-3">{s.summary}</p>
+                      <p className="text-brand-gray text-xs line-clamp-3">{s.summary}</p>
                     </div>
                   ))}
                 </div>
@@ -230,7 +230,7 @@ export default function PatientDetail({ params }: { params: Promise<{ id: string
                       <span className="text-xl shrink-0">
                         {m.mood === 1 ? '😢' : m.mood === 2 ? '😕' : m.mood === 3 ? '😐' : m.mood === 4 ? '🙂' : '😄'}
                       </span>
-                      <div className="bg-slate-50 p-3 rounded-xl border border-slate-100 flex-1">
+                      <div className="bg-brand-light p-3 rounded-xl border border-slate-100 flex-1">
                         <time className="text-xs font-medium text-teal-600 block mb-1">
                           {new Date(m.createdAt).toLocaleDateString()}
                         </time>
