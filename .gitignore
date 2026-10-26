@@ -45,7 +45,11 @@ redisdata/
 # Test coverage
 coverage/
 
-# Database & vector dumps (exceed 100MB limit; use restore_vectors.bat or npm run restore:vectors)
+# Database & vector dumps (uncompressed raw files exceed 100MB; tracked as sagipisip_vectors.sql.zip)
 sagipisip_vectors.sql
 sagipisip_vectors.json
 *.dump
+
+# Raw book documents (vectors are pre-computed in database)
+books/
+

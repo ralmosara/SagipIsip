@@ -7,11 +7,31 @@ async function restoreVectors() {
   console.log('🔄 RESTORING SAGIPISIP VECTOR DATABASE');
   console.log('========================================================');
 
-  const sqlFile = path.resolve(__dirname, '..', '..', 'sagipisip_vectors.sql');
+  const rootDir = path.resolve(__dirname, '..', '..');
+  const sqlFile = path.resolve(rootDir, 'sagipisip_vectors.sql');
+  const zipFile = path.resolve(rootDir, 'sagipisip_vectors.sql.zip');
 
   if (!fs.existsSync(sqlFile)) {
-    console.error(`❌ SQL dump file not found at: ${sqlFile}`);
-    process.exit(1);
+    if (fs.existsSync(zipFile)) {
+      console.log(`📦 SQL file not found, but archive detected: ${zipFile}`);
+      console.log('Extracting sagipisip_vectors.sql.zip...');
+      try {
+        try {
+          execSync(`tar -xf "${zipFile}" -C "${rootDir}"`, { stdio: 'inherit' });
+        } catch {
+          execSync(
+            `powershell -NoProfile -Command "Expand-Archive -Force -Path '${zipFile}' -DestinationPath '${rootDir}'"`,
+            { stdio: 'inherit' }
+          );
+        }
+      } catch (extractErr) {
+        console.error('❌ Failed to extract archive:', extractErr);
+        process.exit(1);
+      }
+    } else {
+      console.error(`❌ SQL dump file or zip not found at: ${sqlFile}`);
+      process.exit(1);
+    }
   }
 
   const fileSizeMB = (fs.statSync(sqlFile).size / (1024 * 1024)).toFixed(1);
